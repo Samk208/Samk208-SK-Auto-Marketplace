@@ -1,0 +1,23 @@
+
+> sk-autosphere-nextjs@0.1.0 build
+> next build
+
+   ▲ Next.js 16.0.1 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 3.9s
+   Running TypeScript ...
+Failed to compile.
+
+./src/app/actions/auth.ts:240:15
+Type error: Argument of type 'any' is not assignable to parameter of type 'never'.
+
+[0m [90m 238 |[39m     [36mconst[39m { error } [33m=[39m [36mawait[39m supabase
+ [90m 239 |[39m       [33m.[39m[36mfrom[39m([32m'profiles'[39m)
+[31m[1m>[22m[39m[90m 240 |[39m       [33m.[39mupdate({
+ [90m     |[39m               [31m[1m^[22m[39m
+ [90m 241 |[39m         full_name[33m:[39m data[33m.[39mfullName[33m,[39m
+ [90m 242 |[39m         phone_number[33m:[39m data[33m.[39mphoneNumber[33m,[39m
+ [90m 243 |[39m         country[33m:[39m data[33m.[39mcountry[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null

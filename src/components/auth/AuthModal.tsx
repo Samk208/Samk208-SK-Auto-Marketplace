@@ -1,19 +1,19 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/Dialog';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
-import { Label } from '../ui/Label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
-import { useTranslation } from '../../hooks/useTranslation';
-import type { User } from '../../types';
-import { supabase } from '../../lib/supabase';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/Dialog';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'login' | 'signup';
   initialRole?: 'buyer' | 'seller';
-  onLoginSuccess: (user: User) => void;
 }
 
 const CarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -29,96 +29,78 @@ const TagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
 );
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'login', initialRole = 'buyer', onLoginSuccess }) => {
+export const AuthModal: React.FC<AuthModalProps> = ({
+  isOpen,
+  onClose,
+  initialMode = 'login',
+  initialRole = 'buyer'
+}) => {
   const [activeTab, setActiveTab] = useState(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<'buyer' | 'seller'>(initialRole);
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { signIn, signUp, isSigningIn, isSigningUp } = useAuth();
 
   useEffect(() => {
     if (isOpen) {
       setActiveTab(initialMode);
+      setError(null);
       if (initialMode === 'signup') {
         setRole(initialRole);
       }
     }
   }, [isOpen, initialMode, initialRole]);
-  
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      const user = data.user;
-      if (!user) throw new Error('No user returned');
+      const result = await signIn({ email, password });
 
-      const { data: profile, error: profileErr } = await supabase
-        .from('profiles')
-        .select('id, full_name, role, avatar_url')
-        .eq('id', user.id)
-        .single();
-      if (profileErr) throw profileErr;
-
-      const appUser: User = {
-        id: user.id,
-        email: user.email || email,
-        fullName: profile?.full_name || fullName || user.email || 'User',
-        role: (profile?.role as 'buyer' | 'seller') || 'buyer',
-        avatarUrl: profile?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(profile?.full_name || fullName || 'User')}`
-      };
-      onLoginSuccess(appUser);
-      onClose();
+      if (result.success) {
+        // Success - close modal and let useAuth handle the state update
+        onClose();
+        // Reset form
+        setEmail('');
+        setPassword('');
+      } else {
+        setError(result.error || 'Login failed');
+      }
     } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error(err);
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
+      console.error('Login error:', err);
+      setError(err.message || 'An unexpected error occurred');
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      const user = data.user;
-      if (!user) throw new Error('No user returned');
-
-      // Create or update profile
-      const avatarUrl = `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(fullName || email)}`;
-      const { error: upsertErr } = await supabase.from('profiles').upsert({
-        id: user.id,
-        full_name: fullName || email,
-        role: role,
-        avatar_url: avatarUrl,
-        updated_at: new Date().toISOString(),
-      });
-      if (upsertErr) throw upsertErr;
-
-      const appUser: User = {
-        id: user.id,
-        email: user.email || email,
+      const result = await signUp({
+        email,
+        password,
         fullName: fullName || email,
-        role: role,
-        avatarUrl,
-      };
-      onLoginSuccess(appUser);
-      onClose();
+        role
+      });
+
+      if (result.success) {
+        // Success - close modal and let useAuth handle the state update
+        onClose();
+        // Reset form
+        setEmail('');
+        setPassword('');
+        setFullName('');
+      } else {
+        setError(result.error || 'Sign up failed');
+      }
     } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error(err);
-      setError(err.message || 'Sign up failed');
-    } finally {
-      setLoading(false);
+      console.error('Signup error:', err);
+      setError(err.message || 'An unexpected error occurred');
     }
   };
 
@@ -150,7 +132,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                 </div>
               </div>
               {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
-              <Button type="submit" className="w-full" disabled={loading}>{loading ? t('loading') : t('login_cta')}</Button>
+              <Button type="submit" className="w-full" disabled={isSigningIn}>
+                {isSigningIn ? t('loading') : t('login_cta')}
+              </Button>
             </form>
             <div className="mt-4 text-center text-sm">
               {t('login_toggle')}{' '}
@@ -201,7 +185,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                 </div>
               </div>
               {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
-              <Button type="submit" className="w-full" disabled={loading}>{loading ? t('loading') : t('signup_cta')}</Button>
+              <Button type="submit" className="w-full" disabled={isSigningUp}>
+                {isSigningUp ? t('loading') : t('signup_cta')}
+              </Button>
             </form>
             <div className="mt-4 text-center text-sm">
                 {t('signup_toggle')}{' '}

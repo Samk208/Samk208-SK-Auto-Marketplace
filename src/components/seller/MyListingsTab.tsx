@@ -1,18 +1,20 @@
+'use client';
 
 import React, { useState } from 'react';
-import { useTranslation } from '../../hooks/useTranslation';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
-import { Button } from '../ui/Button';
-import type { Car, Page, ToastMessage } from '../../types';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/AlertDialog';
-import { Badge } from '../ui/Badge';
+import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useDeleteCar } from '@/hooks/useCars';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { Button } from '@/components/ui/Button';
+import type { Car, Page, ToastMessage } from '@/types/types';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/AlertDialog';
+import { Badge } from '@/components/ui/Badge';
 
 interface MyListingsTabProps {
     listings: Car[];
-    onNavigate: (page: Page, context?: any) => void;
-    onDeleteCar: (carId: number) => void;
-    showToast: (message: string, type?: ToastMessage['type']) => void;
+    onNavigate?: (page: Page, context?: any) => void;
+    showToast?: (message: string, type?: ToastMessage['type']) => void;
 }
 
 const PlusIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -26,22 +28,53 @@ const TrashIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 
-export const MyListingsTab: React.FC<MyListingsTabProps> = ({ listings, onNavigate, onDeleteCar }) => {
+export const MyListingsTab: React.FC<MyListingsTabProps> = ({ listings, onNavigate, showToast }) => {
     const { t } = useTranslation();
+    const router = useRouter();
+    const deleteCar = useDeleteCar();
     const [carToDelete, setCarToDelete] = useState<Car | null>(null);
 
+    const navigate = onNavigate || ((page: Page) => {
+        const pageToPath = (p: Page): string => {
+            switch (p) {
+                case 'list-car': return '/list-car';
+                default: return '/';
+            }
+        };
+        router.push(pageToPath(page));
+    });
+
     const getStatusBadge = (status: Car['status']) => {
-        switch(status) {
-            case 'Active': return <Badge variant="success">{t('active')}</Badge>;
-            case 'Sold': return <Badge variant="secondary">{t('sold')}</Badge>;
-            case 'Pending': return <Badge variant="warning">{t('pending')}</Badge>;
-            default: return null;
+        const normalized = status.toLowerCase();
+        switch(normalized) {
+            case 'active':
+            case 'published':
+                return <Badge variant="success">{t('active')}</Badge>;
+            case 'sold':
+                return <Badge variant="secondary">{t('sold')}</Badge>;
+            case 'pending':
+            case 'draft':
+                return <Badge variant="warning">{t('pending')}</Badge>;
+            default:
+                return <Badge>{status}</Badge>;
         }
     }
 
-    const handleDeleteConfirm = () => {
-        if (carToDelete) {
-            onDeleteCar(carToDelete.id);
+    const handleDeleteConfirm = async () => {
+        if (!carToDelete) return;
+
+        try {
+            const result = await deleteCar.mutateAsync(carToDelete.id as string);
+
+            if (result.success) {
+                showToast?.(t('car_deleted_successfully') || 'Car deleted successfully', 'success');
+            } else {
+                showToast?.(result.error || 'Failed to delete car', 'error');
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            showToast?.('An error occurred while deleting', 'error');
+        } finally {
             setCarToDelete(null);
         }
     }
@@ -51,7 +84,7 @@ export const MyListingsTab: React.FC<MyListingsTabProps> = ({ listings, onNaviga
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>{t('my_listings')}</CardTitle>
-                <Button onClick={() => onNavigate('list-car')}>
+                <Button onClick={() => navigate('list-car')}>
                     <PlusIcon className="mr-2 h-4 w-4" />
                     {t('list_new_car')}
                 </Button>

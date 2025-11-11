@@ -1,13 +1,15 @@
 
- 'use client';
+'use client';
 
- import React, { useState, useEffect, useRef } from 'react';
- import Image from 'next/image';
- import { useRouter } from 'next/navigation';
- import { useTheme } from '@/hooks/useTheme';
- import { useTranslation } from '@/hooks/useTranslation';
- import type { User, Language, Page } from '@/types/types';
- import { Button } from '@/components/ui/Button';
+import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/hooks/useAuth';
+import type { Language, Page } from '@/types/types';
+import { Button } from '@/components/ui/Button';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 const LogoIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg viewBox="0 0 160 28" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -58,10 +60,6 @@ const Badge: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 interface HeaderProps {
-  onLogin?: () => void;
-  onSignUp?: (role?: 'buyer' | 'seller') => void;
-  onLogout?: () => void;
-  user?: User | null;
   onNavigate?: (page: Page, context?: unknown) => void;
   currentPage?: Page;
 }
@@ -71,11 +69,15 @@ const NavLink: React.FC<{ page: Page; active: boolean; onClick: (page: Page) => 
     <button onClick={() => onClick(page)} className={`transition-colors ${active ? 'text-foreground' : 'text-foreground/60 hover:text-foreground/80'}`}>{children}</button>
   );
 
-export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogout, onNavigate, currentPage }) => {
+export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   const { theme, toggleTheme } = useTheme();
   const { t, language, setLanguage } = useTranslation();
+  const { user, profile, isAuthenticated, signOut } = useAuth();
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
+  const [authModalRole, setAuthModalRole] = useState<'buyer' | 'seller'>('buyer');
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -102,10 +104,33 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
   const navigate: (page: Page) => void = onNavigate
     ? (page) => onNavigate(page)
     : (page) => router.push(pageToPath(page));
-  const doLogin = onLogin ?? (() => {});
-  const doSignUp = onSignUp ?? (() => {});
-  const doLogout = onLogout ?? (() => {});
   const activePage = currentPage ?? ('home' as Page);
+
+  const handleLogin = () => {
+    setAuthModalMode('login');
+    setAuthModalRole('buyer');
+    setIsAuthModalOpen(true);
+  };
+
+  const handleSignUp = (role: 'buyer' | 'seller' = 'buyer') => {
+    setAuthModalMode('signup');
+    setAuthModalRole(role);
+    setIsAuthModalOpen(true);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  // Get display name and role from profile or user
+  const displayName = profile?.full_name || user?.email || 'User';
+  const userRole = (profile?.role as 'buyer' | 'seller') || 'buyer';
+  const avatarUrl = profile?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(displayName)}`;
 
   const languages: { code: Language; name: string }[] = [
     { code: 'en', name: 'English' },
@@ -137,15 +162,15 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <NavLink page="home" active={activePage === 'home'} onClick={navigate}>{t('home')}</NavLink>
             <NavLink page="cars" active={activePage === 'cars'} onClick={navigate}>{t('browse_cars')}</NavLink>
-            
-            {user?.role === 'buyer' && (
+
+            {isAuthenticated && userRole === 'buyer' && (
               <>
                 <NavLink page="favorites" active={activePage === 'favorites'} onClick={navigate}>{t('my_favorites')}</NavLink>
                 <NavLink page="messages" active={activePage === 'messages'} onClick={navigate}>{t('messages')}<Badge>{t('coming_soon')}</Badge></NavLink>
               </>
             )}
 
-            {user?.role === 'seller' && (
+            {isAuthenticated && userRole === 'seller' && (
                <>
                 <button onClick={() => navigate('seller-dashboard')} className="text-foreground/60 transition-colors hover:text-foreground/80">{t('my_listings')}</button>
                 <button onClick={() => navigate('messages')} className="text-foreground/60 transition-colors hover:text-foreground/80 flex items-center">{t('messages')}<Badge>{t('coming_soon')}</Badge></button>
@@ -183,27 +208,29 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
             {theme === 'light' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
           </button>
 
-          {user ? (
+          {isAuthenticated ? (
             <>
-              {user.role === 'seller' && (
+              {userRole === 'seller' && (
                 <Button onClick={() => navigate('list-car')} size="sm">{t('list_your_car_free')}</Button>
               )}
               <div className="relative" ref={userMenuRef}>
                 <button onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="flex items-center gap-2">
-                  <Image src={user.avatarUrl || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(user.fullName)}`}
-                         alt={user.fullName}
-                         width={32}
-                         height={32}
-                         className="h-8 w-8 rounded-full" />
+                  <Image
+                    src={avatarUrl}
+                    alt={displayName}
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 rounded-full"
+                  />
                 </button>
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-popover shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                      <div className="py-1">
                       <div className="px-4 py-2 border-b">
-                        <p className="text-sm font-medium text-popover-foreground truncate">{user.fullName}</p>
-                        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                        <p className="text-sm font-medium text-popover-foreground truncate">{displayName}</p>
+                        <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
                       </div>
-                      {user.role === 'buyer' ? (
+                      {userRole === 'buyer' ? (
                         <>
                           <button onClick={() => { navigate('saved-searches'); setIsUserMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent">{t('my_saved_searches')}</button>
                           <a href="#" className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent">{t('settings')}</a>
@@ -216,7 +243,7 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
                       )}
                       <button
                         onClick={() => {
-                          doLogout();
+                          handleLogout();
                           setIsUserMenuOpen(false);
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent border-t"
@@ -230,13 +257,20 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <a href="#" onClick={(e) => { e.preventDefault(); doSignUp('seller'); }} className="hidden lg:inline-flex text-sm font-medium text-foreground/80 hover:text-foreground">{t('sell_your_car')}</a>
-              <Button onClick={doLogin} variant="ghost" className="hidden sm:inline-flex">{t('login')}</Button>
-              <Button onClick={() => doSignUp()}> {t('signup')}</Button>
+              <a href="#" onClick={(e) => { e.preventDefault(); handleSignUp('seller'); }} className="hidden lg:inline-flex text-sm font-medium text-foreground/80 hover:text-foreground">{t('sell_your_car')}</a>
+              <Button onClick={handleLogin} variant="ghost" className="hidden sm:inline-flex">{t('login')}</Button>
+              <Button onClick={() => handleSignUp('buyer')}>{t('signup')}</Button>
             </div>
           )}
         </div>
       </div>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+        initialRole={authModalRole}
+      />
     </header>
   );
 };
