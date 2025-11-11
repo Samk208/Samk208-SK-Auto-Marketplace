@@ -9,9 +9,9 @@ import { useFavorites } from '@/hooks/useFavorites';
 interface CarCardProps {
   car: Car;
   sellers: User[];
-  onNavigate: (page: Page, context?: any) => void;
-  showToast: (message: string, type?: ToastMessage['type']) => void;
-  currentUser: User | null;
+  onNavigate?: (page: Page, context?: any) => void;
+  showToast?: (message: string, type?: ToastMessage['type']) => void;
+  currentUser?: User | null;
 }
 
 const MapPinIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -40,11 +40,11 @@ export const CarCard: React.FC<CarCardProps> = ({ car, sellers, onNavigate, show
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!currentUser) {
-        showToast('Please log in to save favorites.', 'info');
+        showToast?.('Please log in to save favorites.', 'info');
         return;
     }
     toggleFavorite(car.id);
-    showToast(t('favorites_coming_soon'), 'info');
+    showToast?.(t('favorites_coming_soon'), 'info');
   };
   
   return (
@@ -93,7 +93,7 @@ export const CarCard: React.FC<CarCardProps> = ({ car, sellers, onNavigate, show
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button onClick={() => onNavigate('car-detail', { carId: car.id })} className="w-full">{t('view_details')}</Button>
+        <Button onClick={() => onNavigate?.('car-detail', { carId: car.id })} className="w-full">{t('view_details')}</Button>
       </CardFooter>
     </Card>
   );
