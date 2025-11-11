@@ -124,7 +124,7 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ ...car, id: carToEdit?.id || 0, dealer_id: carToEdit?.dealer_id || '' });
+    onSubmit({ ...car, id: carToEdit?.id || crypto.randomUUID(), dealer_id: carToEdit?.dealer_id || '' });
   };
   
   const AiWriterModal = () => (

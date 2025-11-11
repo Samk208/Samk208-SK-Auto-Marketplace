@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from '../hooks/useTranslation';
-import { CarCard } from './CarCard';
-import { Skeleton } from './ui/Skeleton';
-import type { Car, Page, User, ToastMessage } from '../types';
+import { useTranslation } from '@/hooks/useTranslation';
+import { CarCard } from '@/components/car/CarCard';
+import { Skeleton } from '@/components/ui/Skeleton';
+import type { Car, Page, User, ToastMessage } from '@/types';
 
 interface AIRecommendationsProps {
   cars: Car[];

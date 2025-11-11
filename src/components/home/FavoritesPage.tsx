@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { useFavorites } from '../hooks/useFavorites';
-import type { Car, Page, User, ToastMessage } from '../types';
-import { useTranslation } from '../hooks/useTranslation';
-import { CarCard } from './CarCard';
-import { Button } from './ui/Button';
+import { useFavorites } from '@/hooks/useFavorites';
+import type { Car, Page, User, ToastMessage } from '@/types';
+import { useTranslation } from '@/hooks/useTranslation';
+import { CarCard } from '@/components/car/CarCard';
+import { Button } from '@/components/ui/Button';
 
 interface FavoritesPageProps {
   allCars: Car[];

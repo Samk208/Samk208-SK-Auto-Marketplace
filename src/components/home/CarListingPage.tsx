@@ -1,14 +1,14 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { CarCard } from './CarCard';
-import { Input } from './ui/Input';
-import { Button } from './ui/Button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
-import { Slider } from './ui/Slider';
-import { Label } from './ui/Label';
-import type { Car, User, Page, ToastMessage } from '../types';
-import { useTranslation } from '../hooks/useTranslation';
-import { supabase } from '../lib/supabase';
+import { CarCard } from '@/components/car/CarCard';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Slider } from '@/components/ui/Slider';
+import { Label } from '@/components/ui/Label';
+import type { Car, User, Page, ToastMessage } from '@/types';
+import { useTranslation } from '@/hooks/useTranslation';
+import { supabase } from '@/lib/supabase';
 
 interface CarListingPageProps {
     cars: Car[];

@@ -1,6 +1,6 @@
 
 export interface Car {
-  id: string | number;
+  id: string; // UUID from Supabase
   make: string;
   model: string;
   year: number;

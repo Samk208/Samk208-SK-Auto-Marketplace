@@ -12,7 +12,7 @@ interface SellerDashboardProps {
   onUpdateUser: (user: User) => void;
   onNavigate: (page: Page, context?: any) => void;
   cars: Car[];
-  onDeleteCar: (carId: number) => void;
+  onDeleteCar: (carId: string) => void;
   showToast: (message: string, type?: ToastMessage['type']) => void;
 }
 

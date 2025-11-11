@@ -11,7 +11,7 @@ import { Badge } from '../ui/Badge';
 interface MyListingsTabProps {
     listings: Car[];
     onNavigate: (page: Page, context?: any) => void;
-    onDeleteCar: (carId: number) => void;
+    onDeleteCar: (carId: string) => void;
     showToast: (message: string, type?: ToastMessage['type']) => void;
 }
 
