@@ -1,0 +1,1990 @@
+# SK AutoSphere - High-Level Vision & Specifications
+
+## Core Concept
+
+SK AutoSphere is an AI-powered automotive marketplace that bridges Korean car dealers with African buyers. The platform eliminates the 30-minute listing time for sellers and provides instant, accurate vehicle information in multiple languages (Korean, English, French, Swahili) to buyers across Africa.
+
+**Value Proposition:**
+- For Korean Sellers: Transform 30-minute listing creation into <5 minutes using AI-powered description generation
+- For African Buyers: Get transparent total landed costs (car price + shipping + import duties + taxes) in their local currency
+- For Both: Real-time multilingual communication without language barriers
+
+**Market Validation:**
+- 8,500+ qualified African buyer leads already captured
+- Validated demand in Nigeria, Kenya, Ghana, Tanzania, Rwanda
+- Competitive advantage: AI-powered features + Korean market access
+
+---
+
+## Tech Stack Foundation
+
+**Frontend:**
+- Next.js 14 (App Router) for web application
+- React Native + Expo for mobile app (iOS & Android)
+- Tailwind CSS for styling
+- Mobile-first responsive design (50% of sellers use mobile)
+
+**Backend:**
+- Supabase (PostgreSQL database)
+- Supabase Auth for authentication
+- Supabase Realtime for messaging
+- Supabase Storage for images
+- Row Level Security (RLS) for data protection
+
+**AI Integration:**
+- Google Gemini API for vehicle description generation
+- Google Cloud Translation API for real-time message translation
+- Budget: $300/month for AI features
+
+**Deployment:**
+- Web: Netlify with automatic deployments
+- Mobile: Expo Application Services (EAS)
+
+---
+
+## MVP User Personas
+
+### Persona 1: Korean Car Dealer (Seller)
+- **Name:** Mr. Park (45 years old)
+- **Location:** Seoul, South Korea
+- **Pain Points:** 
+  - Spending 30 minutes per listing writing descriptions in Korean only
+  - Missing international buyers due to language barriers
+  - No clear way to reach African market
+  - Manual inventory management
+- **Tech Comfort:** Moderate (uses smartphone for business 50% of the time)
+- **Goal:** List cars quickly and connect with serious international buyers
+
+### Persona 2: African Car Buyer
+- **Name:** Emmanuel (32 years old)
+- **Location:** Lagos, Nigeria
+- **Pain Points:**
+  - Hidden costs when importing cars (unexpected duties/taxes)
+  - Language barriers with Asian sellers
+  - Unreliable sellers, no transparency
+  - Slow 3G connections (need lightweight app)
+- **Tech Comfort:** High (smartphone is primary device)
+- **Goal:** Find reliable Korean cars with transparent total costs
+
+---
+
+## Complete User Flows & Screens
+
+### PHASE 1: Authentication & Onboarding
+
+#### Screen 1: Landing Page
+**Purpose:** First impression, explain value proposition, drive signups
+
+**Elements:**
+- Hero section with rotating showcase of featured vehicles
+- Value propositions in 3 columns:
+  - For Sellers: "List in 5 minutes with AI"
+  - For Buyers: "Transparent total costs"
+  - Platform: "Real-time multilingual chat"
+- CTA buttons: "Start Selling" and "Browse Cars"
+- Trust indicators: "8,500+ buyers in 5 countries"
+- Language selector in header (KR/EN/FR/SW)
+- Footer with links (About, Contact, Terms, Privacy)
+
+**User Flow:**
+1. User arrives at landing page
+2. Sees value proposition relevant to them
+3. Clicks "Start Selling" or "Browse Cars"
+4. Routes to appropriate signup flow
+
+---
+
+#### Screen 2: Role Selection
+**Purpose:** Determine if user is Seller or Buyer to customize experience
+
+**Elements:**
+- Large heading: "I want to..."
+- Two large cards:
+  - Card 1: "Sell Korean Cars" (with dealer icon)
+    - Subtitle: "Korean dealer exporting to Africa"
+  - Card 2: "Buy Korean Cars" (with buyer icon)
+    - Subtitle: "Buyer importing from Korea"
+- Can skip and select later in profile
+- Language selector remains visible
+
+**User Flow:**
+1. User clicks on their role
+2. System stores role preference
+3. Routes to appropriate signup form
+4. Customizes onboarding based on role
+
+---
+
+#### Screen 3: Signup Form
+**Purpose:** Create account with email/password or social auth
+
+**Seller Signup:**
+- Email address (required)
+- Password (min 8 characters, 1 uppercase, 1 number)
+- Dealership name (required)
+- Phone number with country code selector (required)
+- Business registration number (optional, for verification)
+- Checkbox: "I agree to Terms of Service"
+- Social auth options: Google, Naver, Kakao
+- Link: "Already have account? Sign in"
+
+**Buyer Signup:**
+- Email address (required)
+- Password (min 8 characters, 1 uppercase, 1 number)
+- Full name (required)
+- Phone number with country code selector (required)
+- Country/Location (dropdown with African countries)
+- Checkbox: "I agree to Terms of Service"
+- Social auth options: Google
+- Link: "Already have account? Sign in"
+
+**User Flow:**
+1. User enters information
+2. Client-side validation on blur
+3. Click "Create Account"
+4. If email exists: error message
+5. If successful: sends verification email
+6. Routes to email verification screen
+
+---
+
+#### Screen 4: Email Verification
+**Purpose:** Verify email address
+
+**Elements:**
+- Icon: Envelope with checkmark
+- Heading: "Check your email"
+- Text: "We sent a verification link to [email]"
+- Resend button (disabled for 60 seconds after initial send)
+- Link: "Wrong email? Go back"
+- Note: "Check spam folder if not received"
+
+**User Flow:**
+1. User checks email
+2. Clicks verification link
+3. Email verified in Supabase
+4. Routes to onboarding flow (based on role)
+
+---
+
+#### Screen 5: Seller Onboarding (3 steps)
+
+**Step 1: Business Information**
+- Dealership name (pre-filled from signup)
+- Business address (Korean address format)
+- Years in business (dropdown: <1, 1-3, 3-5, 5-10, 10+)
+- Number of employees (dropdown: 1-5, 6-10, 11-20, 21-50, 50+)
+- Average monthly inventory (dropdown: 1-10, 11-25, 26-50, 51-100, 100+)
+- Primary export markets (multi-select: Nigeria, Kenya, Ghana, Tanzania, etc.)
+- Progress indicator: "1 of 3"
+- Buttons: "Skip" and "Continue"
+
+**Step 2: Inventory Types**
+- Question: "What types of vehicles do you typically sell?"
+- Multi-select checkboxes:
+  - Sedans
+  - SUVs
+  - Trucks
+  - Vans
+  - Luxury vehicles
+  - Commercial vehicles
+  - Motorcycles
+- Price ranges (multi-select):
+  - Under $5,000
+  - $5,000 - $10,000
+  - $10,000 - $20,000
+  - $20,000 - $30,000
+  - $30,000+
+- Progress indicator: "2 of 3"
+- Buttons: "Back", "Skip", "Continue"
+
+**Step 3: Platform Features Tour**
+- Carousel with 4 slides:
+  1. AI Description Generator: "Upload 6 photos, get description in 4 languages instantly"
+  2. Real-time Chat: "Communicate with buyers in their language automatically"
+  3. Total Cost Calculator: "Show buyers exact landed costs including all fees"
+  4. Verified Badge: "Complete verification to earn buyer trust"
+- Each slide has illustration + text
+- Progress dots below
+- Buttons: "Skip Tour" and "Next" (on last slide: "Get Started")
+
+**User Flow:**
+1. User completes each step
+2. Can skip any step
+3. Data saved to Supabase profile table
+4. On completion, routes to Seller Dashboard
+
+---
+
+#### Screen 6: Buyer Onboarding (3 steps)
+
+**Step 1: Location Details**
+- Country (pre-filled from signup, locked)
+- City/Port of delivery (dropdown of major cities)
+- Preferred currency display (dropdown: USD, NGN, KES, GHS, etc.)
+- Question: "Are you buying for?"
+  - Personal use
+  - Business/Resale
+  - Both
+- Progress indicator: "1 of 3"
+- Buttons: "Skip" and "Continue"
+
+**Step 2: Vehicle Preferences**
+- Question: "What are you looking for?"
+- Budget range (slider: $1,000 - $50,000+)
+- Vehicle types (multi-select):
+  - Sedan
+  - SUV
+  - Truck
+  - Van
+  - Luxury
+  - Commercial
+- Preferred brands (search + multi-select):
+  - Toyota, Hyundai, Kia, Honda, Nissan, etc.
+- Year preference (range slider: 2000 - 2024)
+- Progress indicator: "2 of 3"
+- Buttons: "Back", "Skip", "Continue"
+
+**Step 3: Platform Features Tour**
+- Carousel with 4 slides:
+  1. Total Cost Transparency: "See complete landed costs before you buy"
+  2. Real-time Chat: "Ask questions in your language"
+  3. Verified Dealers: "Only deal with verified Korean exporters"
+  4. Mobile Optimized: "Fast experience even on 3G"
+- Each slide has illustration + text
+- Progress dots below
+- Buttons: "Skip Tour" and "Next" (on last slide: "Start Browsing")
+
+**User Flow:**
+1. User completes each step
+2. Can skip any step
+3. Data saved to Supabase profile table
+4. Preferences used for personalized vehicle recommendations
+5. On completion, routes to Vehicle Browse/Search
+
+---
+
+### PHASE 2: Seller Dashboard & Listing Management
+
+#### Screen 7: Seller Dashboard
+**Purpose:** Central hub for sellers to manage their business
+
+**Navigation Bar (Top):**
+- Logo (left)
+- Active listings count badge
+- Messages icon with unread count
+- Notifications bell
+- Profile dropdown (right)
+  - My Profile
+  - Settings
+  - Verification Status
+  - Help & Support
+  - Sign Out
+
+**Main Content:**
+- Welcome section: "Welcome back, [Dealership Name]!"
+- Quick Stats Cards (row of 4):
+  1. Total Listings (number + trend arrow)
+  2. Active Inquiries (number + trend arrow)
+  3. This Month's Views (number + trend arrow)
+  4. Verification Status (badge: Unverified/Pending/Verified)
+
+**Action Buttons:**
+- Primary CTA: "+ Create New Listing" (large, prominent)
+- Secondary: "Import from Excel" (for bulk upload)
+
+**Listings Management Section:**
+- Tabs: "All", "Active", "Pending", "Sold", "Expired"
+- Filter dropdown: Sort by (Newest, Oldest, Most Viewed, Price High-Low)
+- Search bar: "Search your listings..."
+- Grid/List view toggle
+
+**Listings Grid/List:**
+Each listing shows:
+- Primary photo (thumbnail)
+- Make/Model/Year
+- Price in USD and KRW
+- Status badge (Active/Pending/Sold)
+- View count
+- Inquiry count
+- Last updated timestamp
+- Quick actions: Edit, Duplicate, Delete, View
+
+**Empty State (if no listings):**
+- Illustration of car with upload icon
+- Heading: "No listings yet"
+- Subtext: "Create your first listing in under 5 minutes"
+- CTA button: "Create First Listing"
+
+**User Flow:**
+1. Seller lands on dashboard after login
+2. Sees overview of their business metrics
+3. Can quickly access any listing to manage
+4. Primary action is creating new listing
+
+---
+
+#### Screen 8: Create Listing - Photo Upload
+**Purpose:** Upload vehicle photos (minimum 6, maximum 20)
+
+**Layout:**
+- Progress indicator: "Step 1 of 5: Photos"
+- Heading: "Upload Vehicle Photos"
+- Subtext: "Take clear photos of exterior, interior, engine, and any damage. Minimum 6 photos required."
+
+**Photo Grid:**
+- Drag-and-drop upload zone (takes 60% of screen)
+- Grid showing uploaded photos (can reorder via drag)
+- Each photo tile has:
+  - Thumbnail
+  - Remove button (X)
+  - Reorder handles
+  - Category label dropdown (Exterior, Interior, Engine, Dashboard, Damage, Other)
+
+**Upload Tips (Sidebar):**
+- Icon + text tips:
+  - "Bright natural lighting works best"
+  - "Capture all angles: front, back, sides"
+  - "Include close-ups of any damage"
+  - "Show odometer clearly"
+  - "Interior shots show condition"
+
+**Photo Categories Required:**
+- Progress checklist:
+  - ✓ Front view (required)
+  - ✓ Rear view (required)
+  - ✓ Both side views (required)
+  - ✓ Interior (required)
+  - ✓ Dashboard/Odometer (required)
+  - Optional: Engine, Damage, Additional
+
+**Mobile Considerations:**
+- If on mobile: Opens native camera OR photo library
+- Can take photos directly or select from gallery
+- Shows upload progress bar
+- Compresses images automatically (max 2MB per photo)
+
+**Buttons:**
+- "Save Draft" (saves and exits)
+- "Back" (goes to dashboard, confirms if photos uploaded)
+- "Continue to Details" (disabled until minimum 6 photos)
+
+**User Flow:**
+1. Seller clicks "+ Create New Listing" from dashboard
+2. Opens photo upload screen
+3. Takes/uploads minimum 6 photos
+4. Categorizes each photo
+5. System validates required categories
+6. Clicks "Continue to Details"
+7. Photos uploaded to Supabase Storage
+8. Routes to Vehicle Details form
+
+---
+
+#### Screen 9: Create Listing - Vehicle Details (Auto-filled by AI)
+**Purpose:** Enter/review vehicle information (AI pre-fills from photos)
+
+**Layout:**
+- Progress indicator: "Step 2 of 5: Vehicle Details"
+- Heading: "Vehicle Information"
+- AI status indicator: "Analyzing photos... 10 seconds remaining"
+
+**AI Processing States:**
+1. **Analyzing (10-15 seconds):**
+   - Animated loading indicator
+   - Text updates: "Identifying vehicle...", "Detecting condition...", "Reading odometer..."
+   - Progress bar
+   - Can cancel and fill manually
+
+2. **Success:**
+   - Checkmark animation
+   - "AI completed analysis!"
+   - Pre-filled form (all fields editable)
+
+3. **Error/Timeout:**
+   - Error icon
+   - "AI analysis unavailable. Please fill manually."
+   - Empty form, ready for manual entry
+
+**Form Fields (organized in sections):**
+
+**Basic Information:**
+- Make (dropdown: Toyota, Hyundai, Kia, Honda, Nissan, Chevrolet, etc.)
+  - AI-filled with confidence indicator: "95% confident"
+- Model (text input, auto-suggest based on make)
+  - AI-filled
+- Year (dropdown: 1995-2024)
+  - AI-filled
+- Trim/Grade (text input)
+  - AI-filled (optional)
+
+**Technical Specifications:**
+- Mileage (number input + unit selector: KM/Miles)
+  - AI-filled from odometer photo
+- Fuel Type (dropdown: Gasoline, Diesel, Hybrid, Electric, LPG)
+  - AI-filled
+- Transmission (dropdown: Automatic, Manual)
+  - AI-filled
+- Engine Size (text input, e.g., "2.0L")
+  - AI-filled
+- Drive Type (dropdown: FWD, RWD, AWD, 4WD)
+  - AI-filled
+
+**Exterior:**
+- Body Type (dropdown: Sedan, SUV, Hatchback, Coupe, Van, Truck, Wagon)
+  - AI-filled
+- Exterior Color (dropdown + color picker)
+  - AI-filled
+- Number of Doors (dropdown: 2, 3, 4, 5)
+  - AI-filled
+
+**Interior:**
+- Interior Color (dropdown)
+  - AI-filled
+- Seating Capacity (dropdown: 2-9)
+  - AI-filled
+- Interior Material (dropdown: Fabric, Leather, Synthetic Leather, Mixed)
+  - AI-filled (optional)
+
+**Condition:**
+- Overall Condition (radio buttons):
+  - Excellent (like new, no visible wear)
+  - Good (minor wear, well maintained)
+  - Fair (some wear, needs minor repairs)
+  - Poor (significant wear, needs major repairs)
+  - AI-filled with explanation
+- Accident History (radio: Yes/No/Unknown)
+- Number of Previous Owners (number input)
+
+**Features & Options:**
+- Multi-select checkboxes (AI attempts to detect from photos):
+  - Air Conditioning
+  - Power Windows
+  - Power Locks
+  - Cruise Control
+  - Navigation System
+  - Backup Camera
+  - Sunroof/Moonroof
+  - Leather Seats
+  - Heated Seats
+  - ABS Brakes
+  - Airbags (number)
+  - Alloy Wheels
+  - Bluetooth
+  - USB Ports
+  - Parking Sensors
+
+**Edit/Confidence Indicators:**
+- Each AI-filled field shows confidence % in subtle text
+- Warning if confidence <70%: "Please verify this information"
+- Can click "Explain" to see why AI chose this value
+
+**Buttons:**
+- "Save Draft"
+- "Back" (returns to photo upload)
+- "Continue to Description" (validates required fields)
+
+**Validation:**
+- Required fields: Make, Model, Year, Mileage, Fuel Type, Transmission
+- Shows errors on submit if missing
+- Client-side validation on blur
+
+**User Flow:**
+1. After photo upload, AI begins analyzing
+2. Seller waits 10-15 seconds (can do other things)
+3. AI pre-fills all detected information
+4. Seller reviews and corrects any errors
+5. Seller adds any information AI missed
+6. Clicks "Continue to Description"
+7. Data saved to Supabase listings table
+8. Routes to Description generation
+
+---
+
+#### Screen 10: Create Listing - AI Description Generation
+**Purpose:** Generate multilingual description using AI
+
+**Layout:**
+- Progress indicator: "Step 3 of 5: Description"
+- Heading: "Generate Description"
+
+**Description Input Section:**
+**Option 1: AI-Generated (Recommended)**
+- Radio button selected by default
+- Subtext: "Let AI create compelling descriptions in 4 languages"
+- Optional text area: "Additional details or highlights"
+  - Placeholder: "Anything special about this vehicle? (e.g., recently serviced, new tires, never smoked in)"
+  - Character count: 0/500
+- Button: "Generate Description" (primary, large)
+
+**Option 2: Manual Entry**
+- Radio button
+- Subtext: "Write your own description"
+- Shows 4 text areas (one per language):
+  - Korean (required)
+  - English (required)
+  - French (optional)
+  - Swahili (optional)
+
+**AI Generation States:**
+
+1. **Initial:**
+   - Shows benefits: "AI will create optimized descriptions in Korean, English, French, and Swahili in ~15 seconds"
+   - Cost indicator: "Uses 1 AI credit" (if credit system)
+
+2. **Generating (15-20 seconds):**
+   - Animated loading with steps:
+     - "Analyzing vehicle condition..." ✓
+     - "Highlighting key features..." (in progress)
+     - "Optimizing for buyers..." (pending)
+     - "Translating to 4 languages..." (pending)
+   - Progress bar
+   - Cannot navigate away (confirms if try)
+
+3. **Success:**
+   - Checkmark animation
+   - "Descriptions generated successfully!"
+   - Shows 4 tabbed descriptions:
+     - Tab 1: 한국어 (Korean) - Active by default
+     - Tab 2: English
+     - Tab 3: Français (French)
+     - Tab 4: Swahili
+
+**Generated Description Display:**
+Each tab shows:
+- Full description (200-300 words)
+- Formatting: paragraphs, bullet points for features
+- Tone: Professional, factual, highlight positives
+- Structure:
+  - Overview (Make, Model, Year, brief condition)
+  - Key Features (bullet points)
+  - Condition Details (honest assessment)
+  - Technical Specifications
+  - Call to Action
+
+**Edit Options:**
+- Each description is fully editable
+- Character counter (min 100, max 1000 per language)
+- "Regenerate" button (uses another AI credit)
+- "Translate from Korean" button (for manual translations)
+
+**Preview:**
+- Button: "Preview Listing" (opens modal showing how it looks to buyers)
+
+**Buttons:**
+- "Save Draft"
+- "Back" (returns to vehicle details)
+- "Regenerate All" (if not satisfied)
+- "Continue to Pricing" (validates min length)
+
+**Error Handling:**
+- If AI fails: "AI service unavailable. You can:"
+  - Retry (button)
+  - Switch to manual entry (button)
+  - Save draft and come back later
+- If API quota exceeded: "Daily AI limit reached. Try tomorrow or enter manually."
+
+**Cost Optimization:**
+- Cache descriptions for 7 days (reuse if seller edits same listing)
+- Only regenerate languages that changed
+- Track API usage per seller (prevent abuse)
+
+**User Flow:**
+1. Seller arrives with vehicle details saved
+2. Chooses AI generation (default)
+3. Optionally adds highlights
+4. Clicks "Generate Description"
+5. Waits 15 seconds watching progress
+6. Reviews generated descriptions in all languages
+7. Makes any edits needed
+8. Clicks "Continue to Pricing"
+9. Descriptions saved to Supabase
+10. Routes to pricing screen
+
+---
+
+#### Screen 11: Create Listing - Pricing
+**Purpose:** Set asking price in multiple currencies
+
+**Layout:**
+- Progress indicator: "Step 4 of 5: Pricing"
+- Heading: "Set Your Price"
+
+**Primary Price:**
+- Large number input
+- Currency dropdown (KRW or USD)
+  - Defaults to seller's preference (usually KRW)
+- Label: "Asking Price"
+- Real-time validation (min $500, max $500,000)
+
+**Auto-Converted Prices (Read-only):**
+Shows in card layout:
+- USD (if primary is KRW)
+- KRW (if primary is USD)
+- NGN (Nigerian Naira)
+- KES (Kenyan Shilling)
+- GHS (Ghanaian Cedi)
+- TZS (Tanzanian Shilling)
+
+Each shows:
+- Flag icon
+- Currency code
+- Converted amount
+- "~" to indicate approximate
+- Last update timestamp
+
+**Market Insights (Optional Feature):**
+Card showing:
+- Similar vehicles price range
+- "Similar [Make Model Year] typically sell for $8,000 - $12,000"
+- Average time to sell
+- Suggestion: "Your price is competitive" or "Consider lowering by 10%"
+- Data source: Recent platform sales
+
+**Negotiability Setting:**
+- Radio buttons:
+  - Fixed Price (non-negotiable)
+  - Open to Offers (buyers can send offers)
+  - Negotiable (expect some negotiation)
+- Default: "Open to Offers"
+
+**Minimum Acceptable Offer (Optional):**
+- Only shown if "Open to Offers" or "Negotiable" selected
+- Number input (percentage or absolute)
+- Example: "Won't accept less than $9,000"
+- Buyers don't see this; used to auto-reject low offers
+
+**Payment Terms:**
+- Checkboxes (multi-select):
+  - Bank Transfer
+  - Letter of Credit (L/C)
+  - Cash (on inspection)
+  - PayPal/Wise (for deposits)
+- Checkbox: "Open to payment plans" (seller financing)
+
+**Buttons:**
+- "Save Draft"
+- "Back" (returns to description)
+- "Continue to Review" (validates price)
+
+**Validation:**
+- Price must be > $500
+- Price must be < $500,000
+- Warning if price seems too high/low based on vehicle details
+- Warning if currency conversion may have errors (exchange rates)
+
+**User Flow:**
+1. Seller enters asking price in their preferred currency
+2. System auto-converts to all major currencies
+3. Sees market insights (optional)
+4. Sets negotiability preferences
+5. Clicks "Continue to Review"
+6. Pricing saved to Supabase
+7. Routes to final review screen
+
+---
+
+#### Screen 12: Create Listing - Final Review & Publish
+**Purpose:** Review complete listing before publishing
+
+**Layout:**
+- Progress indicator: "Step 5 of 5: Review & Publish"
+- Heading: "Review Your Listing"
+- Subtext: "Make sure everything looks good before publishing"
+
+**Preview Card (Large):**
+Shows listing as buyers will see it:
+- Photo gallery (swipeable)
+- Make/Model/Year (heading)
+- Price in USD (prominent)
+- Location: Seoul, South Korea
+- Quick specs: Mileage | Fuel Type | Transmission
+- Description preview (first 200 characters)
+- "View Full Listing" button (opens preview modal)
+
+**Section-by-Section Review:**
+Each section expandable/collapsible:
+
+**1. Photos (6-20 images):**
+- Thumbnail strip
+- "Edit" button → back to step 1
+- ✓ checkmark if minimum met
+
+**2. Vehicle Details:**
+- Quick facts in 2 columns
+- "Edit" button → back to step 2
+- ✓ checkmark if all required filled
+
+**3. Description:**
+- Shows Korean description (collapsible)
+- Language tabs to view others
+- Word count for each
+- "Edit" button → back to step 3
+- ✓ checkmark if minimum length met
+
+**4. Pricing:**
+- Asking price in primary currency
+- Negotiability status
+- "Edit" button → back to step 4
+- ✓ checkmark if valid price
+
+**Listing Settings:**
+- Dropdown: "Listing Duration"
+  - 30 days (default)
+  - 60 days
+  - 90 days
+  - Until sold
+- Checkbox: "Feature this listing" (paid option, if applicable)
+- Checkbox: "Allow international shipping inquiries"
+- Checkbox: "I confirm this information is accurate"
+
+**Publish Options:**
+- Primary button: "Publish Listing"
+  - If clicked, listing goes live immediately
+  - Success message + confetti animation
+  - Routes to listing view page
+- Secondary button: "Save as Draft"
+  - Saves all info but doesn't publish
+  - Can edit/publish later from dashboard
+- Tertiary link: "Preview Listing" (opens preview modal)
+
+**Preview Modal:**
+- Full listing view as buyers see it
+- Close button
+- "Looks good, publish!" button
+
+**Legal/Compliance:**
+- Small text: "By publishing, you agree to:"
+  - Listing Terms
+  - Export Regulations
+  - Accurate Information Policy
+- Links to policies
+
+**User Flow:**
+1. Seller reviews all sections
+2. Makes any last-minute edits
+3. Confirms accuracy checkbox
+4. Clicks "Publish Listing"
+5. Listing immediately visible to buyers
+6. Success message shown
+7. Email confirmation sent
+8. Routes to listing view page
+
+---
+
+### PHASE 3: Buyer Experience
+
+#### Screen 13: Vehicle Browse/Search
+**Purpose:** Buyers discover and search for vehicles
+
+**Top Navigation:**
+- Logo (left)
+- Search bar (center, prominent)
+  - Placeholder: "Search by make, model, or year..."
+  - Autocomplete suggestions as typing
+- Messages icon with unread badge
+- User profile dropdown (right)
+
+**Filter Panel (Left Sidebar, 25% width):**
+- Collapsible on mobile
+- Reset All button at top
+
+**Price Range:**
+- Dual-handle slider
+- Min/Max inputs
+- Currency selector (tied to buyer's preference)
+
+**Make & Model:**
+- Searchable multi-select dropdown
+- Popular makes shown first
+- "Show All" expands
+
+**Year:**
+- Dual slider (1995-2024)
+
+**Location (Vehicle Currently In):**
+- Dropdown: Seoul, Busan, Incheon, Other Korea
+
+**Mileage:**
+- Dual slider (0-300,000 km)
+- Toggle: Show in Miles/KM
+
+**Body Type:**
+- Checkboxes:
+  - Sedan, SUV, Hatchback, Coupe, Van, Truck, Wagon
+
+**Fuel Type:**
+- Checkboxes:
+  - Gasoline, Diesel, Hybrid, Electric, LPG
+
+**Transmission:**
+- Radio buttons: All, Automatic, Manual
+
+**Condition:**
+- Checkboxes:
+  - Excellent, Good, Fair, Poor
+
+**Features:**
+- Expandable section
+- Common features as checkboxes:
+  - Air Conditioning
+  - Leather Seats
+  - Navigation System
+  - Backup Camera
+  - Sunroof
+
+**Buttons:**
+- "Apply Filters" (primary)
+- "Clear All" (secondary)
+
+**Main Content Area (75% width):**
+
+**Top Bar:**
+- Results count: "Showing 247 vehicles"
+- Sort dropdown:
+  - Recently Listed (default)
+  - Price: Low to High
+  - Price: High to Low
+  - Mileage: Low to High
+  - Year: Newest First
+- View toggle: Grid / List
+
+**Vehicle Cards (Grid View, 3 columns):**
+Each card shows:
+- Primary photo (large)
+- Photo count badge: "12 photos"
+- Verified badge (if dealer verified)
+- Make/Model/Year (bold)
+- Key specs: Mileage | Fuel | Transmission
+- Price (large, in buyer's currency)
+  - Small text: "~₩12,500,000"
+- Location: Seoul
+- Listed: "3 days ago"
+- Hover: "View Details" button appears
+
+**Vehicle Cards (List View, single column):**
+- Thumbnail (left)
+- Details (middle, expanded)
+- Price + action buttons (right)
+
+**Pagination:**
+- Bottom of page
+- Load More button OR
+- Page numbers: < 1 2 3 ... 10 >
+
+**Empty State:**
+- If no results:
+  - Illustration
+  - "No vehicles match your filters"
+  - "Try adjusting your search"
+  - Button: "Clear Filters"
+
+**Mobile Considerations:**
+- Filter panel becomes bottom sheet/drawer
+- Single column grid
+- Sticky search bar
+- Infinite scroll instead of pagination
+
+**User Flow:**
+1. Buyer lands on browse page
+2. Sees all available vehicles
+3. Uses filters to narrow down
+4. Clicks on vehicle card
+5. Routes to listing detail page
+
+---
+
+#### Screen 14: Listing Detail Page
+**Purpose:** Show complete vehicle information and enable contact
+
+**Layout:**
+
+**Photo Gallery Section (Top, full width):**
+- Main image (large, 60% of screen height)
+- Thumbnail strip below (scrollable)
+- Fullscreen button
+- Image counter: "5 / 12"
+- Navigation arrows
+- Zoom on click/tap
+- Swipe gestures on mobile
+
+**Title & Price (Below Gallery):**
+- Make Model Year (H1)
+- Price (large, bold)
+  - Primary in buyer's currency
+  - Secondary in KRW (smaller)
+- Total Cost Calculator button: "Calculate Total Landed Cost →"
+- Verified dealer badge
+- Listing views count
+- Listed date
+
+**Action Buttons (Sticky on scroll):**
+- Primary: "Contact Seller" (opens chat)
+- Secondary: "Make an Offer"
+- Tertiary: "Save to Favorites" (heart icon)
+- Share button (copy link, social media)
+
+**Two-Column Layout:**
+
+**Left Column (70%):**
+
+**Overview Section:**
+- Quick specs in 2-column grid:
+  - Mileage: 45,000 km
+  - Year: 2019
+  - Fuel Type: Gasoline
+  - Transmission: Automatic
+  - Body Type: Sedan
+  - Exterior Color: White
+  - Interior Color: Black
+  - Condition: Good
+  - Doors: 4
+  - Seats: 5
+  - Drive: FWD
+  - Engine: 2.0L
+
+**Description (Multilingual Tabs):**
+- Tab selector: English | 한국어 | Français | Swahili
+- Full description (200-300 words)
+- Formatted with paragraphs and bullets
+- "Read More" if long (collapses)
+
+**Features & Options:**
+- Grid of feature badges
+- Icons + text for each feature
+- Example: ☑️ Air Conditioning, ☑️ Backup Camera
+
+**Specifications:**
+- Collapsible table
+- Detailed specs in rows:
+  - VIN (if provided)
+  - Engine details
+  - Fuel economy (if known)
+  - Dimensions
+  - Weight
+  - etc.
+
+**Condition Report (if provided):**
+- Overall condition rating (stars)
+- Accident history
+- Maintenance records
+- Known issues (if any)
+- Recent service details
+
+**Right Column (30%, Sticky):**
+
+**Seller Card:**
+- Dealership name
+- Verification badge
+- Location: Seoul, South Korea
+- Member since: Jan 2024
+- Active listings: 23
+- Response rate: 98%
+- Average response time: <2 hours
+- Button: "View All Listings from [Dealer]"
+
+**Contact Options:**
+- Primary button: "Send Message"
+- Alternative: Phone number (if public)
+- WhatsApp button (if connected)
+
+**Shipping & Delivery:**
+- Estimated shipping time: 4-6 weeks
+- Shipping ports: Lagos, Mombasa, Accra (dropdown)
+- Button: "Calculate Total Cost" (opens calculator modal)
+
+**Trust & Safety:**
+- Icons + text:
+  - ✓ Verified Dealer
+  - ✓ Secure Payments
+  - ✓ Buyer Protection
+- Link: "How SK AutoSphere Protects You"
+
+**Report Listing:**
+- Small link at bottom
+- Opens report form modal
+
+**Bottom Section:**
+
+**Similar Vehicles:**
+- Heading: "You might also like"
+- Horizontal scrollable row
+- 4-6 similar vehicle cards
+- Based on: Same make, similar year, similar price
+
+**Recently Viewed:**
+- Heading: "Recently viewed"
+- Horizontal scrollable row
+- Last 5 vehicles viewed by this buyer
+
+**Mobile Layout:**
+- Single column, stacked
+- Sticky action buttons at bottom
+- Collapsible sections to save space
+
+**User Flow:**
+1. Buyer clicks vehicle from browse page
+2. Views photo gallery
+3. Reads description in their language
+4. Checks specifications and condition
+5. Either:
+   - Clicks "Calculate Total Cost" (modal)
+   - Clicks "Contact Seller" (opens chat)
+   - Clicks "Make an Offer" (opens offer form)
+6. Can save to favorites for later
+
+---
+
+#### Screen 15: Total Cost Calculator Modal
+**Purpose:** Show buyer complete landed cost including all fees
+
+**Modal Layout (Overlay):**
+- Header: "Total Landed Cost Calculator"
+- Close button (X)
+
+**Step 1: Vehicle Price (Read-only):**
+- Shows asking price
+- In buyer's currency
+
+**Step 2: Your Location:**
+- Country dropdown (pre-filled from profile)
+- Port of entry dropdown:
+  - Nigeria: Lagos (Apapa Port)
+  - Kenya: Mombasa
+  - Ghana: Tema
+  - Tanzania: Dar es Salaam
+
+**Step 3: Calculations:**
+The calculator shows a detailed breakdown:
+
+**Purchase Cost:**
+- Vehicle Price: $10,000
+- Platform Fee (2%): $200
+
+**Shipping Costs:**
+- Shipping to [Port]: $1,500
+- Insurance: $300
+- Port Handling: $150
+
+**Import Duties & Taxes:**
+- Import Duty (35%): $3,500
+- VAT (7.5%): $750
+- Other Fees: $200
+
+**TOTAL LANDED COST:**
+- Large, bold number: $16,600
+- In buyer's local currency too: ₦8,300,000
+
+**Breakdown Table:**
+- Expandable details for each line item
+- "How is this calculated?" links
+- Tooltips explaining each fee
+
+**Disclaimer:**
+- "Estimates based on typical fees"
+- "Actual costs may vary"
+- "Consult with customs broker"
+
+**Actions:**
+- Button: "Save This Calculation"
+- Button: "Contact Seller About This Cost"
+- Button: "Close"
+
+**User Flow:**
+1. Buyer opens calculator from listing page
+2. Confirms/selects their location
+3. Sees instant breakdown
+4. Can save calculation
+5. Can contact seller with this info
+6. Understands true total cost before buying
+
+---
+
+#### Screen 16: Chat/Messaging Interface
+**Purpose:** Real-time communication between buyers and sellers
+
+**Layout:**
+
+**Chat List Screen (Initial):**
+
+**Header:**
+- "Messages"
+- Filter tabs: All | Buying | Selling (for users with both roles)
+- Search conversations: "Search messages..."
+- New message button (+ icon)
+
+**Conversation List:**
+Each conversation row shows:
+- Avatar (user or dealership logo)
+- Name (user or dealership)
+- Vehicle context: "[2019 Toyota Camry]"
+- Last message preview (first 50 chars)
+- Timestamp (smart: "5m ago", "Yesterday", "March 15")
+- Unread badge (if unread)
+- Online status indicator (green dot if active)
+
+**Empty State:**
+- Illustration
+- "No conversations yet"
+- "Contact a seller to get started"
+- Button: "Browse Vehicles"
+
+---
+
+**Chat Detail Screen:**
+
+**Header:**
+- Back button
+- Avatar + Name
+- Vehicle context: "[2019 Toyota Camry]"
+- Video call icon (future feature)
+- More options (...)
+  - View Listing
+  - View Profile
+  - Block User
+  - Report Conversation
+
+**Message Area (Middle, scrollable):**
+- Messages in bubbles
+- Sender messages: Right-aligned, blue
+- Receiver messages: Left-aligned, gray
+- Timestamps (show on hover or every 5 messages)
+
+**Message Types:**
+
+**1. Text Messages:**
+- Original language (top)
+- Translated text (bottom, italics)
+- "See original" toggle
+- Example:
+  ```
+  Hello, is this vehicle still available?
+  안녕하세요, 이 차량은 아직 구할 수 있나요?
+  [Translated from English]
+  ```
+
+**2. Vehicle Reference:**
+- Special bubble with:
+  - Small vehicle photo
+  - Make/Model/Year
+  - Price
+  - "View Listing" button
+
+**3. Price Offer:**
+- Special bubble:
+  - "Offer: $9,500"
+  - Accept / Counter / Decline buttons
+  - Expiry: "Valid for 48 hours"
+
+**4. System Messages:**
+- Center-aligned, gray
+- Examples:
+  - "Conversation started March 15"
+  - "[User] viewed the listing"
+  - "Offer accepted ✓"
+
+**Translation Indicator:**
+- Each message shows original language
+- Auto-translation happens in real-time
+- Can toggle to see original
+
+**Input Area (Bottom, Sticky):**
+- Text input field
+- Placeholder: "Type a message..."
+- Attachment button (camera icon)
+  - Take photo
+  - Choose from gallery
+  - Send document
+- Emoji picker
+- Send button (paper plane icon)
+  - Disabled if empty
+  - Shows loading when sending
+
+**Mobile Keyboard:**
+- Input area pushes up with keyboard
+- Maintains scroll position
+
+**Typing Indicator:**
+- "... [Name] is typing"
+- Shows in real-time when other person typing
+
+**Read Receipts:**
+- Single checkmark: Sent
+- Double checkmark: Delivered
+- Blue double checkmark: Read
+
+**Offline Behavior:**
+- Messages queue if offline
+- Send when back online
+- Shows "Waiting to send" status
+
+**User Flow:**
+1. Buyer clicks "Contact Seller" on listing
+2. Opens chat with that seller
+3. Pre-filled context includes vehicle reference
+4. Types message in their language
+5. Message auto-translated to seller's language
+6. Real-time back-and-forth communication
+7. Can send offers, photos, documents
+8. Both parties see translations automatically
+
+**Performance:**
+- Supabase Realtime for instant delivery
+- Message history loaded in batches (20 at a time)
+- Scroll to load more (infinite scroll)
+- Works on 3G (lightweight, text-focused)
+
+---
+
+### PHASE 4: Additional Features
+
+#### Screen 17: Make an Offer Modal
+**Purpose:** Buyers can submit price offers to sellers
+
+**Modal Layout:**
+- Header: "Make an Offer"
+- Close button (X)
+
+**Content:**
+- Vehicle summary card:
+  - Small photo
+  - Make/Model/Year
+  - Asking price: $10,000
+
+**Offer Form:**
+- "Your Offer" input:
+  - Number input (currency auto-detected)
+  - Min: 50% of asking price
+  - Max: Asking price
+  - Real-time validation
+- Percentage difference shown:
+  - "Your offer is 15% below asking price"
+  - Green if close, yellow if lower, red if very low
+
+**Message to Seller (Optional):**
+- Text area: "Why this price? (optional)"
+- Placeholder: "Explain your offer, mention any concerns about condition, mileage, etc."
+- Character limit: 500
+
+**Offer Validity:**
+- Dropdown: "Offer valid for..."
+  - 24 hours (default)
+  - 48 hours
+  - 72 hours
+  - 1 week
+
+**Terms Checkboxes:**
+- "I am serious about this purchase"
+- "I understand this is a binding offer if accepted"
+
+**Buttons:**
+- Primary: "Submit Offer"
+- Secondary: "Cancel"
+
+**User Flow:**
+1. Buyer clicks "Make an Offer"
+2. Enters their offer amount
+3. Optionally explains reasoning
+4. Submits offer
+5. Seller receives notification
+6. Seller can Accept, Counter, or Decline
+7. Buyer notified of response
+
+---
+
+#### Screen 18: User Profile (Buyer)
+**Purpose:** Manage buyer profile and preferences
+
+**Header:**
+- "My Profile"
+- Edit button (top right)
+
+**Profile Sections:**
+
+**Personal Information:**
+- Full name
+- Email (verified badge)
+- Phone number (verified badge)
+- Location (Country + City)
+- Member since date
+
+**Buying Preferences:**
+- Budget range
+- Preferred vehicle types
+- Favorite makes
+- Year range preference
+- Preferred currency
+
+**Saved Searches:**
+- List of saved search filters
+- "Used SUVs under $15k in Lagos"
+- Can activate with one click
+
+**Verification Status:**
+- Email: ✓ Verified
+- Phone: ✓ Verified
+- ID: Not verified
+- Button: "Complete Verification"
+
+**Account Settings:**
+- Language preference
+- Notification preferences
+- Privacy settings
+- Payment methods (saved)
+
+**Activity:**
+- Active inquiries: 3
+- Saved vehicles: 12
+- Offers made: 5
+- Purchases: 1 (if any)
+
+**Buttons:**
+- "Edit Profile"
+- "Change Password"
+- "Log Out"
+
+---
+
+#### Screen 19: User Profile (Seller)
+**Purpose:** Manage seller profile and business information
+
+**Header:**
+- Dealership name
+- Verification badge (if verified)
+- Edit button
+
+**Profile Sections:**
+
+**Business Information:**
+- Dealership name
+- Business registration number
+- Years in business
+- License number (if applicable)
+- Address (Seoul, Korea)
+- Phone number
+- Email
+- Website (if any)
+
+**Verification Status:**
+- Business Registration: ✓ Verified
+- ID Verification: ✓ Verified
+- Address Verification: Pending
+- Bank Account: ✓ Verified
+- Badge Level: Silver (goal: Gold)
+- Button: "Complete Full Verification"
+
+**Statistics:**
+- Total listings: 23
+- Active: 18
+- Sold: 47 (all-time)
+- Response rate: 98%
+- Average response time: 1.5 hours
+- Member since: Jan 2024
+
+**Export Markets:**
+- Countries served: Nigeria, Kenya, Ghana
+- Shipping partners (if any)
+
+**Payment Methods:**
+- Bank account details (for buyer payments)
+- PayPal/Wise (if connected)
+
+**Reviews & Ratings (Future Feature):**
+- Overall rating: 4.8/5
+- Number of reviews: 23
+- Recent reviews list
+
+**Account Settings:**
+- Language preference
+- Currency preference
+- Notification preferences
+- Privacy settings
+
+**Buttons:**
+- "Edit Profile"
+- "Upgrade Verification"
+- "View My Listings"
+- "Log Out"
+
+---
+
+### PHASE 5: Platform Features
+
+#### Screen 20: Settings
+**Purpose:** Manage all app settings
+
+**Sections:**
+
+**Account:**
+- Email address
+- Password (change)
+- Phone number
+- Delete account
+
+**Notifications:**
+- Push notifications toggle
+- Email notifications toggle
+- SMS notifications toggle
+- Notification types:
+  - New messages (toggle)
+  - Price drops (toggle)
+  - New listings matching saved searches (toggle)
+  - Offer responses (toggle)
+  - Platform updates (toggle)
+
+**Language & Region:**
+- App language: English | 한국어 | Français | Swahili
+- Currency preference
+- Time zone
+- Distance units: KM | Miles
+
+**Privacy:**
+- Profile visibility
+- Show phone number
+- Show email address
+- Data sharing preferences
+
+**Display:**
+- Theme: Light | Dark | Auto
+- Text size
+- Reduce animations (accessibility)
+
+**Security:**
+- Two-factor authentication (toggle)
+- Login history
+- Active sessions
+- Trusted devices
+
+**Help & Support:**
+- FAQ
+- Contact support
+- Report a problem
+- Terms of Service
+- Privacy Policy
+- About SK AutoSphere
+
+---
+
+#### Screen 21: Notifications Center
+**Purpose:** View all notifications
+
+**Header:**
+- "Notifications"
+- Mark all as read
+- Settings icon
+
+**Tabs:**
+- All
+- Messages
+- Listings
+- Offers
+- Updates
+
+**Notification Types:**
+
+**1. New Message:**
+- Avatar
+- "[Name] sent you a message about [Vehicle]"
+- Timestamp
+- Unread indicator (blue dot)
+- Tap: Opens chat
+
+**2. Price Drop:**
+- Vehicle thumbnail
+- "[Vehicle] price dropped to $9,500"
+- Timestamp
+- Tap: Opens listing
+
+**3. New Offer:**
+- "New offer on [Your Vehicle]: $9,000"
+- Accept/Decline buttons
+- Tap: Opens offer details
+
+**4. Offer Response:**
+- "Your offer on [Vehicle] was accepted!"
+- Timestamp
+- Tap: Opens chat
+
+**5. Listing Status:**
+- "Your listing [Vehicle] is now live"
+- "Your listing [Vehicle] expires in 3 days"
+- Tap: Opens listing
+
+**Empty State:**
+- "No notifications"
+- Illustration
+- "You're all caught up!"
+
+---
+
+### PHASE 6: Mobile-Specific Features
+
+#### Bottom Navigation (Mobile App)
+**Purpose:** Main navigation for mobile app
+
+**5 Tabs:**
+
+**1. Home:**
+- Icon: House
+- Label: "Home"
+- Screen: Browse/Search vehicles
+
+**2. Favorites:**
+- Icon: Heart
+- Label: "Saved"
+- Screen: Saved vehicles & searches
+- Badge: Count of saved items
+
+**3. Add/Sell:**
+- Icon: Plus (center, elevated)
+- Label: "Sell"
+- Action: Opens create listing flow
+- Only visible for sellers
+
+**4. Messages:**
+- Icon: Chat bubble
+- Label: "Messages"
+- Screen: Chat list
+- Badge: Unread count
+
+**5. Profile:**
+- Icon: Person
+- Label: "You"
+- Screen: Profile settings
+
+---
+
+#### Pull-to-Refresh
+- On browse/search screen
+- On chat list
+- On notifications
+- Animation: Spinner or custom vehicle icon
+
+#### Offline Mode
+- Shows banner: "You're offline"
+- Cached listings still viewable
+- Messages queue for sending
+- Graceful degradation
+
+#### Deep Linking
+- From email: Opens specific listing
+- From notification: Opens relevant screen
+- From shared link: Opens listing or search
+
+---
+
+## Technical Requirements
+
+### Performance Targets
+- Page load: <3 seconds on 3G
+- Time to Interactive: <5 seconds
+- Image optimization: WebP, lazy loading
+- API response time: <1 second
+- AI generation: <20 seconds
+
+### Security
+- HTTPS everywhere
+- Supabase Row Level Security (RLS)
+- Secure authentication (JWT)
+- Rate limiting on APIs
+- Input validation on all forms
+- XSS protection
+- CSRF protection
+
+### Scalability
+- Supabase handles up to 10,000 users initially
+- Image CDN for fast delivery
+- Database indexes on frequently queried fields
+- Caching strategy (7 days for AI descriptions)
+
+### Accessibility (WCAG 2.1 AA)
+- Keyboard navigation
+- Screen reader support
+- Alt text for images
+- Sufficient color contrast
+- Focus indicators
+- Skip links
+
+### Internationalization (i18n)
+- Support for 4 languages: Korean, English, French, Swahili
+- RTL support (future: Arabic)
+- Date/time localization
+- Currency formatting
+- Number formatting
+
+### Analytics & Tracking
+- User behavior tracking (Google Analytics)
+- Conversion funnels
+- Error tracking (Sentry)
+- Performance monitoring
+- A/B testing capability
+
+---
+
+## AI Integration Details
+
+### AI Description Generator (Google Gemini)
+
+**Input:**
+- 6-20 vehicle photos
+- Vehicle details (make, model, year, mileage, condition)
+- Optional seller notes
+
+**Process:**
+1. Upload photos to Supabase Storage
+2. Send photo URLs + context to Gemini API
+3. Gemini analyzes:
+   - Vehicle condition from photos
+   - Visible features
+   - Any damage or issues
+   - Overall appeal
+4. Generates description optimized for:
+   - SEO keywords
+   - Buyer appeal
+   - Honest condition assessment
+   - Call to action
+5. Generates in Korean first (250-300 words)
+6. Translates to English, French, Swahili
+
+**Output:**
+- 4 descriptions (one per language)
+- Structured format (overview + features + condition)
+- Formatted with paragraphs and bullets
+
+**Cost Optimization:**
+- Cache descriptions for 7 days
+- Track API usage per seller
+- Set monthly budget: $300
+- Degrade gracefully if budget exceeded
+
+**Error Handling:**
+- Timeout after 30 seconds
+- Fallback to manual entry
+- Retry logic (up to 3 attempts)
+- Show error message if failed
+
+---
+
+### Real-Time Translation (Google Cloud Translation API)
+
+**Input:**
+- User message text
+- Source language (detected or specified)
+- Target language (recipient's preference)
+
+**Process:**
+1. User types message in their language
+2. Message saved to Supabase in original
+3. On send, detect source language
+4. Translate to recipient's language
+5. Show both original and translated
+6. Store both versions
+
+**Output:**
+- Translated message
+- Original message (accessible via toggle)
+- Language indicators
+
+**Cost Optimization:**
+- Batch translations when possible
+- Cache common phrases
+- Only translate when languages differ
+- Budget: $100/month
+
+---
+
+## Success Metrics & KPIs
+
+### For Sellers:
+- Time to create listing: <5 minutes (vs. 30 minutes before)
+- Listing completion rate: >80%
+- Response rate to inquiries: >90%
+- Average inquiries per listing: >5
+- Verification completion rate: >50%
+
+### For Buyers:
+- Search to listing view: <1 minute
+- Listing view to inquiry: >10%
+- Saved vehicles per user: >3
+- Return user rate: >40%
+- Mobile usage: >60%
+
+### Platform:
+- Total listings: 1,000+ in 3 months
+- Active users: 5,000+ in 3 months
+- Messages sent: 10,000+ per month
+- AI descriptions generated: 800+ per month
+- Average session duration: >5 minutes
+
+---
+
+## Phased Development Plan
+
+### Phase 1: MVP Launch (Months 1-2)
+**Goal:** Basic marketplace functionality
+
+**Features:**
+- User authentication (both roles)
+- Basic onboarding
+- Create listing (manual entry)
+- Browse/search vehicles
+- Listing detail page
+- Basic messaging (no translation)
+- User profiles
+
+**Success Criteria:**
+- 50 listings
+- 500 registered users
+- 100 messages sent
+
+---
+
+### Phase 2: AI Features (Month 3)
+**Goal:** Add AI-powered features
+
+**Features:**
+- AI description generator (Gemini)
+- Real-time message translation
+- Total cost calculator
+- Enhanced search filters
+- Saved searches
+
+**Success Criteria:**
+- 80% of listings use AI descriptions
+- 50% of messages translated
+- 200 total listings
+
+---
+
+### Phase 3: Mobile App (Month 4)
+**Goal:** Launch mobile apps
+
+**Features:**
+- React Native app (iOS & Android)
+- All web features
+- Camera integration for photos
+- Push notifications
+- Offline mode
+
+**Success Criteria:**
+- 1,000 app downloads
+- 60% mobile usage
+- 4.0+ app rating
+
+---
+
+### Phase 4: Growth Features (Month 5-6)
+**Goal:** Scale and retain users
+
+**Features:**
+- Seller verification system
+- Offer/negotiation system
+- Reviews & ratings
+- Advanced analytics for sellers
+- Featured listings (paid)
+- Referral program
+
+**Success Criteria:**
+- 500 total listings
+- 5,000 total users
+- 50% verified sellers
+
+---
+
+## Future Enhancements (Post-MVP)
+
+### Phase 5+:
+- Video calls between buyers/sellers
+- Virtual vehicle tours (360° photos)
+- Payment escrow system
+- Shipping integration (track containers)
+- Loan/financing options
+- Insurance integration
+- Vehicle history reports
+- Expanded markets (other Asian countries)
+- Seller analytics dashboard
+- Buyer protection guarantees
+
+---
+
+## Design Principles
+
+### 1. Mobile-First
+- 60%+ of traffic is mobile
+- Design for mobile, enhance for desktop
+- Touch-friendly UI elements (44px min)
+- Optimize for slow 3G connections
+
+### 2. Multilingual by Default
+- Never assume English
+- All content in 4 languages
+- Respect user language preference
+- Auto-detect but allow switching
+
+### 3. Transparency
+- Show all costs upfront
+- No hidden fees
+- Honest vehicle descriptions
+- Clear terms and policies
+
+### 4. Trust & Safety
+- Verification badges
+- Secure payments
+- Report mechanisms
+- Clear policies
+
+### 5. Speed
+- Fast page loads
+- Instant feedback
+- Optimistic UI updates
+- Background processing
+
+### 6. Accessibility
+- WCAG 2.1 AA compliance
+- Keyboard navigation
+- Screen reader friendly
+- High contrast options
+
+---
+
+## Edge Cases & Error Handling
+
+### For Sellers:
+- **What if seller uploads wrong photos?**
+  - Allow delete/reorder before AI processing
+  - Can regenerate description with new photos
+
+- **What if AI description is inaccurate?**
+  - All fields editable
+  - Can regenerate
+  - Can switch to manual entry
+
+- **What if seller lists same car twice?**
+  - Duplicate detection algorithm
+  - Warning message before publish
+
+- **What if seller exceeds AI credit limit?**
+  - Show remaining credits
+  - Option to purchase more or manual entry
+
+### For Buyers:
+- **What if buyer's location not supported?**
+  - Manual cost calculation
+  - Contact support for estimate
+
+- **What if translation is wrong?**
+  - Show original message
+  - Can report bad translation
+
+- **What if seller doesn't respond?**
+  - Auto-reminder after 24 hours
+  - Show response rate on profile
+
+### Platform:
+- **What if Gemini API is down?**
+  - Queue requests for retry
+  - Fallback to manual entry
+  - Show status message
+
+- **What if Supabase is down?**
+  - Offline mode for critical features
+  - Error message with retry
+  - Status page
+
+---
+
+## Competitive Advantages
+
+1. **AI-Powered Descriptions:** Only platform with 4-language AI generation
+2. **Total Cost Transparency:** Show complete landed costs upfront
+3. **Korean Market Access:** Direct to Korean dealers (not Japan focus)
+4. **Mobile-First:** Optimized for African mobile networks
+5. **Real-Time Translation:** Communicate without language barriers
+6. **Verified Dealers:** Trust through verification system
+7. **Speed:** 5-minute listings vs. 30 minutes
+
+---
+
+## Notes for Agents
+
+When building this app, agents should:
+
+1. **Product Manager Agent:**
+   - Break down each screen into detailed user stories
+   - Define acceptance criteria for every feature
+   - Specify edge cases and error states
+   - Document API contracts
+   - Create test scenarios
+
+2. **UX/UI Designer Agent:**
+   - Design mobile-first, responsive layouts
+   - Create comprehensive component library
+   - Specify all UI states (default, loading, error, empty, success)
+   - Ensure WCAG 2.1 AA compliance
+   - Design for 4 languages (consider text expansion)
+   - Optimize for 3G (lightweight, progressive loading)
+
+3. **Architecture Agent:**
+   - Design Supabase schema with RLS policies
+   - Plan API structure (RESTful endpoints)
+   - Set up authentication flows
+   - Configure storage buckets for images
+   - Design caching strategy
+
+4. **Backend Agent:**
+   - Implement Supabase functions
+   - Create API integrations (Gemini, Translation)
+   - Set up webhooks and triggers
+   - Implement rate limiting
+   - Configure environment variables
+
+5. **Frontend Agent:**
+   - Implement Next.js pages (App Router)
+   - Build reusable components
+   - Integrate Supabase client
+   - Implement real-time features
+   - Optimize images and performance
+
+6. **Mobile Agent:**
+   - Build React Native app with Expo
+   - Implement native camera integration
+   - Set up push notifications (EAS)
+   - Handle offline mode
+   - Optimize for Android (primary target)
+
+7. **QA Agent:**
+   - Write unit tests (Jest)
+   - Write integration tests
+   - Test all user flows
+   - Test on real devices (Android priority)
+   - Test on slow 3G
+   - Accessibility testing
+
+8. **DevOps Agent:**
+   - Set up Netlify deployment
+   - Configure EAS for mobile builds
+   - Set up CI/CD pipelines
+   - Configure environment variables
+   - Monitor performance (Sentry)
+   - Set up analytics (Google Analytics)
+
+---
+
+## Final Notes
+
+This high-level vision represents the complete SK AutoSphere MVP and beyond. Each agent should use this document as the single source of truth for understanding:
+- What we're building
+- Why we're building it
+- Who we're building it for
+- How it should work
+- What success looks like
+
+Every feature, screen, and interaction described here has been validated through market research (8,500+ leads) and competitive analysis. Build with confidence that this solves real problems for real users in the Korean-African automotive market.
+
+**Remember:** Mobile-first, multilingual, transparent, and fast. These are our core principles. Never compromise on these.
+
+---
+
+**Document Version:** 1.0  
+**Last Updated:** March 2024  
+**Author:** Sam, SK AutoSphere Founder

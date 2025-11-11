@@ -1,0 +1,371 @@
+# SK AutoSphere - Cursor Rules
+
+## Project Context
+You are working on SK AutoSphere, a Korean-African automotive marketplace platform built with Next.js 14, Supabase, and React Native.
+
+## Tech Stack
+- **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- **Backend:** Supabase (PostgreSQL, Auth, Storage, Realtime)
+- **AI:** Google Gemini API
+- **Mobile:** React Native + Expo
+- **Deployment:** Netlify
+
+## Code Style & Conventions
+
+### TypeScript
+- Use explicit types for all function parameters and return values
+- Prefer `type` over `interface` for object types
+- Use Zod for runtime validation
+- Never use `any` type - use `unknown` if type is truly unknown
+- Enable strict mode in tsconfig.json
+
+### React & Next.js
+- **Default to Server Components** - Only use 'use client' when necessary (interactivity, hooks, browser APIs)
+- **Server Actions** for mutations over API routes
+- Use React Server Components for data fetching when possible
+- Implement proper loading states with Suspense
+- Use semantic HTML elements
+- Follow mobile-first responsive design
+
+### File Structure
+```
+app/
+  (auth)/          # Auth routes
+  (dashboard)/     # Protected routes
+  api/             # API routes
+  cars/            # Public routes
+components/
+  ui/              # shadcn components
+  car/             # Domain-specific
+  layout/          # Layout components
+lib/
+  supabase/        # Database utilities
+  ai/              # Gemini integration
+```
+
+### Naming Conventions
+- **Files:** kebab-case (`car-card.tsx`, `use-translation.ts`)
+- **Components:** PascalCase (`CarCard`, `FavoriteButton`)
+- **Functions:** camelCase (`getCar`, `createListing`)
+- **Constants:** UPPER_SNAKE_CASE (`API_URL`, `MAX_FILE_SIZE`)
+- **Types/Interfaces:** PascalCase (`Car`, `UserProfile`)
+
+### Supabase Patterns
+
+#### Server Components
+```typescript
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+
+const supabase = createServerComponentClient({ cookies });
+```
+
+#### Client Components
+```typescript
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+
+const supabase = createClientComponentClient();
+```
+
+#### Always include type parameter
+```typescript
+import type { Database } from '@/types/supabase';
+const supabase = createServerComponentClient<Database>({ cookies });
+```
+
+## Component Guidelines
+
+### Component Structure
+```typescript
+// components/car/CarCard.tsx
+import type { Car } from '@/types/database';
+
+interface CarCardProps {
+  car: Car;
+  variant?: 'default' | 'compact';
+  onFavorite?: (carId: string) => void;
+}
+
+export default function CarCard({ car, variant = 'default', onFavorite }: CarCardProps) {
+  // Component logic
+  return (
+    // JSX
+  );
+}
+```
+
+### Props Best Practices
+- Use TypeScript interfaces for props
+- Provide default values for optional props
+- Extract complex prop types to separate type definitions
+- Document complex props with JSDoc comments
+
+## Styling Rules
+
+### Tailwind CSS
+- Use Tailwind utility classes - avoid custom CSS when possible
+- Follow mobile-first responsive design (`sm:`, `md:`, `lg:`)
+- Use semantic color classes from design system (`text-primary`, `bg-secondary`)
+- Group related utilities together (layout → spacing → typography → colors)
+
+```typescript
+// Good
+<div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-md">
+
+// Avoid inline styles
+<div style={{ padding: '24px' }}>  // Use Tailwind instead
+```
+
+### Component Variants
+Use `class-variance-authority` for component variants:
+```typescript
+import { cva, type VariantProps } from 'class-variance-authority';
+
+const buttonVariants = cva(
+  'px-4 py-2 rounded-lg font-medium transition',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-primary text-white hover:bg-primary/90',
+        secondary: 'bg-secondary text-gray-700 hover:bg-secondary/90',
+      },
+      size: {
+        sm: 'text-sm',
+        md: 'text-base',
+        lg: 'text-lg',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  }
+);
+```
+
+## Database Patterns
+
+### Query Best Practices
+```typescript
+// Select specific columns (not *)
+const { data } = await supabase
+  .from('cars')
+  .select('id, make, model, year, price, images, seller:profiles(full_name, avatar_url)')
+  .eq('status', 'published')
+  .order('created_at', { ascending: false })
+  .limit(20);
+
+// Always handle errors
+if (error) {
+  console.error('Database error:', error);
+  // Handle gracefully
+}
+```
+
+### RLS Considerations
+- Every table must have RLS enabled
+- Test queries as both authenticated and unauthenticated users
+- Use service role key only for admin operations (server-side only)
+
+## AI Integration (Gemini)
+
+### Server-Side Only
+```typescript
+// app/api/ai/route.ts
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+
+// NEVER expose API key to client-side code
+```
+
+### Prompt Engineering
+- Be specific and detailed in prompts
+- Provide examples when possible
+- Specify output format (JSON, markdown, etc.)
+- Set appropriate temperature (0.3 for factual, 0.7 for creative)
+
+## Security Requirements
+
+### Environment Variables
+- Never commit `.env.local`
+- Use `NEXT_PUBLIC_*` prefix only for truly public values
+- Store secrets in Netlify environment variables for production
+
+### Authentication
+```typescript
+// Always verify authentication for protected actions
+const { data: { user } } = await supabase.auth.getUser();
+
+if (!user) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
+
+// Verify user role for role-specific actions
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('role')
+  .eq('id', user.id)
+  .single();
+```
+
+## Error Handling
+
+### Client-Side
+```typescript
+try {
+  const result = await someAsyncFunction();
+  // Handle success
+} catch (error) {
+  console.error('Operation failed:', error);
+  toast.error('Something went wrong. Please try again.');
+}
+```
+
+### Server-Side
+```typescript
+try {
+  // Operation
+} catch (error) {
+  console.error('Server error:', error);
+  return NextResponse.json(
+    { error: 'Internal server error' },
+    { status: 500 }
+  );
+}
+```
+
+## Testing Guidelines
+
+### Unit Tests (Vitest)
+```typescript
+import { describe, it, expect } from 'vitest';
+import { formatCurrency } from '@/lib/utils/format';
+
+describe('formatCurrency', () => {
+  it('formats USD correctly', () => {
+    expect(formatCurrency(25000, 'USD')).toBe('$25,000.00');
+  });
+});
+```
+
+### E2E Tests (Playwright)
+- Test critical user journeys
+- Cover authentication flows
+- Test on multiple viewports (mobile, desktop)
+
+## Internationalization (i18n)
+
+### Usage
+```typescript
+import { useTranslation } from '@/hooks/useTranslation';
+
+const { t } = useTranslation();
+
+return <h1>{t('hero_title')}</h1>;
+```
+
+### Adding New Keys
+1. Add to `locales/translations.ts` for all languages (en, ko, fr, sw)
+2. Use descriptive keys: `feature_action_description` (e.g., `search_button_text`)
+
+## Performance Optimization
+
+### Images
+```typescript
+import Image from 'next/image';
+
+// Always use Next.js Image component
+<Image
+  src={car.images[0]}
+  alt={car.title}
+  width={400}
+  height={300}
+  loading="lazy"
+  className="object-cover"
+/>
+```
+
+### Route Prefetching
+```typescript
+import Link from 'next/link';
+
+// Links automatically prefetch on hover
+<Link href={`/cars/${car.id}`} prefetch={true}>
+  View Details
+</Link>
+```
+
+## Accessibility (a11y)
+
+- Use semantic HTML (`<button>`, `<nav>`, `<main>`)
+- Include `alt` text for all images
+- Ensure keyboard navigation works
+- Use ARIA labels when semantic HTML isn't enough
+- Test with screen readers when possible
+
+## Git Commit Messages
+
+Follow Conventional Commits:
+```
+feat(auth): add Google OAuth login
+fix(search): resolve filter reset bug
+docs(prd): update AI features documentation
+refactor(api): extract prompt builders
+test(cars): add CarCard tests
+chore(deps): update Supabase to v2.39.0
+```
+
+## Documentation
+
+When implementing features:
+1. Check `docs/03-FEATURES-CORE.md` or `docs/04-FEATURES-AI.md` for specs
+2. Reference `docs/05-DATABASE-SCHEMA.md` for data model
+3. Follow patterns in `CLAUDE.md` for implementation details
+4. Update relevant documentation if behavior changes
+
+## Development Workflow
+
+1. Create feature branch: `feature/FEATURE-ID-description`
+2. Implement with proper types and error handling
+3. Write tests for new functionality
+4. Run linter and type checker before committing
+5. Create PR with clear description
+6. Link to relevant PRD section
+
+## Key Commands Reference
+```bash
+npm run dev           # Start dev server
+npm run build         # Production build
+npm run lint          # Check code style
+npm run type-check    # TypeScript validation
+npm run test          # Run unit tests
+npm run db:migrate    # Apply Supabase migrations
+```
+
+## Important Notes
+
+- **Mobile-first design** - Always consider mobile viewport first
+- **Server Components by default** - Only use client components when necessary
+- **Type safety** - Never use `any`, always define proper types
+- **Error boundaries** - Implement error boundaries for client components
+- **Loading states** - Always show loading UI for async operations
+- **Optimistic updates** - Update UI immediately, rollback on error
+- **Accessibility** - Ensure all interactive elements are keyboard accessible
+
+## AI Assistance Tips
+
+When asking for code:
+- Provide context about the feature (reference PRD if needed)
+- Specify if it's a server or client component
+- Mention any specific libraries or patterns to use
+- Include type definitions for complex data structures
+
+## Reference Documentation
+
+- PRD: `docs/PRD.md`
+- Technical Stack: `docs/02-TECHNICAL-STACK.md`
+- Database Schema: `docs/05-DATABASE-SCHEMA.md`
+- Core Features: `docs/03-FEATURES-CORE.md`
+- AI Features: `docs/04-FEATURES-AI.md`
+- Full Project Context: `CLAUDE.md`

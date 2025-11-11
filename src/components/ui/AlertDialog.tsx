@@ -1,0 +1,94 @@
+
+import React, { useEffect } from 'react';
+import { Button, ButtonProps } from './Button';
+
+interface AlertDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    children: React.ReactNode;
+}
+
+const AlertDialog: React.FC<AlertDialogProps> = ({ open, onOpenChange, children }) => {
+    useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+          if (event.key === 'Escape') {
+            onOpenChange(false);
+          }
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => {
+          window.removeEventListener('keydown', handleEsc);
+        };
+    }, [onOpenChange]);
+
+    if (!open) return null;
+    
+    return (
+         <div 
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            role="alertdialog"
+            aria-modal="true"
+        >
+            <div onClick={() => onOpenChange(false)} className="fixed inset-0 bg-black/80 transition-opacity"></div>
+            {children}
+        </div>
+    )
+};
+AlertDialog.displayName = 'AlertDialog';
+
+const AlertDialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className, ...props }, ref) => (
+        <div
+            ref={ref}
+            className={`relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg duration-200 rounded-lg sm:rounded-lg ${className || ''}`}
+            {...props}
+        />
+    )
+);
+AlertDialogContent.displayName = 'AlertDialogContent';
+
+const AlertDialogHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
+    <div className={`flex flex-col space-y-2 text-center sm:text-left ${className || ''}`} {...props} />
+);
+AlertDialogHeader.displayName = 'AlertDialogHeader';
+
+const AlertDialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+    ({ className, ...props }, ref) => (
+        <h2 ref={ref} className={`text-lg font-semibold ${className || ''}`} {...props} />
+    )
+);
+AlertDialogTitle.displayName = 'AlertDialogTitle';
+
+const AlertDialogDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+    ({ className, ...props }, ref) => (
+        <p ref={ref} className={`text-sm text-muted-foreground ${className || ''}`} {...props} />
+    )
+);
+AlertDialogDescription.displayName = 'AlertDialogDescription';
+
+const AlertDialogFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
+    <div className={`flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 ${className || ''}`} {...props} />
+);
+AlertDialogFooter.displayName = 'AlertDialogFooter';
+
+const AlertDialogAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
+    (props, ref) => <Button ref={ref} {...props} />
+);
+AlertDialogAction.displayName = 'AlertDialogAction';
+
+const AlertDialogCancel = React.forwardRef<HTMLButtonElement, ButtonProps>(
+    (props, ref) => <Button ref={ref} variant="secondary" outline {...props} />
+);
+AlertDialogCancel.displayName = 'AlertDialogCancel';
+
+
+export { 
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogAction,
+    AlertDialogCancel
+};
