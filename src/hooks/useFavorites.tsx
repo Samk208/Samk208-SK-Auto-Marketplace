@@ -1,21 +1,26 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 const FAVORITES_KEY = 'sk-autosphere-favorites';
 
 export const useFavorites = () => {
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
+  // Initialize with a function to avoid setState during render
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => {
+    // Check if window is defined (client-side)
+    if (typeof window === 'undefined') {
+      return new Set();
+    }
+    
     try {
       const storedFavorites = window.localStorage.getItem(FAVORITES_KEY);
       if (storedFavorites) {
-        setFavoriteIds(new Set(JSON.parse(storedFavorites)));
+        return new Set(JSON.parse(storedFavorites));
       }
     } catch (error) {
       console.error('Error reading favorites from localStorage', error);
     }
-  }, []);
+    return new Set();
+  });
 
   const toggleFavorite = useCallback((carId: string) => {
     setFavoriteIds(prevIds => {

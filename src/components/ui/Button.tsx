@@ -1,4 +1,5 @@
 import React from 'react';
+import { Slot } from '@radix-ui/react-slot';
 
 const getVariantClasses = (variant: ButtonProps['variant'], outline: boolean) => {
   if (outline) {
@@ -35,6 +36,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   variant?: 'primary' | 'secondary' | 'destructive' | 'ghost' | 'link' | 'default';
   size?: 'sm' | 'lg' | 'icon' | 'default';
   outline?: boolean;
+  asChild?: boolean;
 }
 
 // Fix: Refactored component to destructure props inside the function body.
@@ -42,13 +44,14 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 // incorrectly widened to `string` when destructured in the function signature.
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (props, ref) => {
-    const { className, variant = 'default', size = 'default', outline = false, ...rest } = props;
+    const { className, variant = 'default', size = 'default', outline = false, asChild = false, ...rest } = props;
     const baseClasses = 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50';
     const variantClasses = getVariantClasses(variant, outline);
     const sizeClasses = getSizeClasses(size);
+    const Comp = asChild ? Slot : 'button';
 
     return (
-      <button
+      <Comp
         className={`${baseClasses} ${variantClasses} ${sizeClasses} ${className || ''}`}
         ref={ref}
         {...rest}

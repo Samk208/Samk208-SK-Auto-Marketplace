@@ -1,18 +1,29 @@
 
+'use client';
+
 import React, { useState } from 'react';
-import { useTranslation } from '../../hooks/useTranslation';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
-import { Button } from '../ui/Button';
-import type { Car, Page, ToastMessage } from '../../types';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/AlertDialog';
-import { Badge } from '../ui/Badge';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { Car, NavigateHandler } from '@/types';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/AlertDialog';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import Image from 'next/image';
 
 interface MyListingsTabProps {
     listings: Car[];
-    onNavigate: (page: Page, context?: any) => void;
+    onNavigate: NavigateHandler;
     onDeleteCar: (carId: string) => void;
-    showToast: (message: string, type?: ToastMessage['type']) => void;
 }
 
 const PlusIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -72,7 +83,16 @@ export const MyListingsTab: React.FC<MyListingsTabProps> = ({ listings, onNaviga
                                 <TableRow key={car.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-4">
-                                            <img src={car.imageUrls[0]} alt={car.model} className="w-16 h-12 object-cover rounded-md" />
+                                            <div className="relative w-16 h-12 overflow-hidden rounded-md">
+                                                <Image
+                                                    src={car.imageUrls[0] || '/placeholder-car.jpg'}
+                                                    alt={car.model}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="64px"
+                                                    unoptimized
+                                                />
+                                            </div>
                                             <div>
                                                 <div className="font-medium">{car.make} {car.model}</div>
                                                 <div className="text-sm text-muted-foreground">{car.currency} {car.price.toLocaleString()}</div>
@@ -83,7 +103,8 @@ export const MyListingsTab: React.FC<MyListingsTabProps> = ({ listings, onNaviga
                                         {getStatusBadge(car.status)}
                                     </TableCell>
                                     <TableCell className="hidden md:table-cell">
-                                        {Math.floor(Math.random() * 2000 + 500)}
+                                        {/* Views counter - to be implemented with analytics */}
+                                        N/A
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
@@ -103,7 +124,7 @@ export const MyListingsTab: React.FC<MyListingsTabProps> = ({ listings, onNaviga
                     </Table>
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-lg font-medium">You haven't listed any cars yet.</p>
+                        <p className="text-lg font-medium">You haven&apos;t listed any cars yet.</p>
                         <p className="text-muted-foreground mt-2">Click the button below to get started and sell your first car!</p>
                         <Button className="mt-4" onClick={() => onNavigate('list-car')}>
                             {t('list_new_car')}

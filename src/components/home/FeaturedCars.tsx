@@ -1,22 +1,24 @@
 
- 'use client';
+'use client';
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { CarCard } from '@/components/car/CarCard';
-import type { Car, Page, User, ToastMessage } from '@/types/types';
+import type { Car, User, ToastMessage, NavigateHandler } from '@/types';
 
 interface FeaturedCarsProps {
     cars?: Car[];
     sellers?: User[];
-    onNavigate?: (page: Page, context?: any) => void;
+    onNavigate?: NavigateHandler;
     showToast?: (message: string, type?: ToastMessage['type']) => void;
     currentUser?: User | null;
 }
 
 export const FeaturedCars: React.FC<FeaturedCarsProps> = ({ cars = [], sellers = [], onNavigate, showToast, currentUser }) => {
   const { t } = useTranslation();
-  const _onNavigate: (page: Page, context?: any) => void = onNavigate ?? (() => {});
-  const _showToast: (message: string, type?: ToastMessage['type']) => void = showToast ?? (() => {});
+  const noopNavigate: NavigateHandler = () => {};
+  const noopToast: (message: string, type?: ToastMessage['type']) => void = () => {};
+  const _onNavigate = onNavigate ?? noopNavigate;
+  const _showToast = showToast ?? noopToast;
   const _currentUser: User | null = currentUser ?? null;
 
   return (

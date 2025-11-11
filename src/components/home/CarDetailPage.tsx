@@ -1,12 +1,15 @@
 
+'use client';
+
 import React, { useState } from 'react';
-import type { Car, Page, User, ToastMessage } from '@/types';
+import type { Car, User, ToastMessage, NavigateHandler } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { CarCard } from '@/components/car/CarCard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Label } from '@/components/ui/Label';
+import Image from 'next/image';
 
 
 interface CarDetailPageProps {
@@ -14,7 +17,7 @@ interface CarDetailPageProps {
   seller: User;
   otherListings: Car[];
   sellers: User[];
-  onNavigate: (page: Page, context?: any) => void;
+  onNavigate: NavigateHandler;
   showToast: (message: string, type?: ToastMessage['type']) => void;
   onOpenContact: (sellerEmail: string) => void;
   currentUser: User | null;
@@ -35,14 +38,55 @@ const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const StarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
 );
+
+type StructuredSpecifications = {
+    engine: string;
+    mileage: string;
+    transmission: 'Automatic' | 'Manual';
+    fuelType: 'Petrol' | 'Diesel' | 'Electric' | 'Hybrid';
+    bodyType: 'Sedan' | 'SUV' | 'Truck' | 'Hatchback' | 'Coupe';
+};
+
+const DEFAULT_SPECIFICATIONS: StructuredSpecifications = {
+    engine: '',
+    mileage: '',
+    transmission: 'Automatic',
+    fuelType: 'Petrol',
+    bodyType: 'Sedan',
+};
+
+const isStructuredSpecifications = (specs: Car['specifications']): specs is StructuredSpecifications => {
+    if (!specs || typeof specs !== 'object') {
+        return false;
+    }
+    const requiredKeys: Array<keyof StructuredSpecifications> = ['engine', 'mileage', 'transmission', 'fuelType', 'bodyType'];
+    return requiredKeys.every((key) => key in specs);
+};
 
 export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, otherListings, sellers, onNavigate, showToast, onOpenContact, currentUser }) => {
     const { t } = useTranslation();
     const [mainImage, setMainImage] = useState(car.imageUrls[0]);
     const [destinationPort, setDestinationPort] = useState('');
     const [shippingEstimate, setShippingEstimate] = useState<{ shipping: number; duties: number; total: number } | null>(null);
+    const rawSpecs = typeof car.specifications === 'object' && car.specifications !== null
+        ? (car.specifications as Record<string, unknown>)
+        : null;
+    const specifications: StructuredSpecifications = isStructuredSpecifications(car.specifications)
+        ? car.specifications
+        : {
+            ...DEFAULT_SPECIFICATIONS,
+            ...(rawSpecs
+                ? {
+                    engine: String(rawSpecs.engine ?? DEFAULT_SPECIFICATIONS.engine),
+                    mileage: String(rawSpecs.mileage ?? DEFAULT_SPECIFICATIONS.mileage),
+                    transmission: (rawSpecs.transmission as StructuredSpecifications['transmission']) ?? DEFAULT_SPECIFICATIONS.transmission,
+                    fuelType: (rawSpecs.fuelType as StructuredSpecifications['fuelType']) ?? DEFAULT_SPECIFICATIONS.fuelType,
+                    bodyType: (rawSpecs.bodyType as StructuredSpecifications['bodyType']) ?? DEFAULT_SPECIFICATIONS.bodyType,
+                }
+                : {}),
+        };
     
     const isVerified = seller.phone && seller.location;
 
@@ -67,19 +111,34 @@ export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, other
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
                 {/* Image Gallery & Main Info (Left/Top) */}
                 <div className="lg:col-span-2">
-                    <div className="mb-4">
-                        <img src={mainImage} alt={`${car.make} ${car.model}`} className="w-full h-auto object-cover rounded-lg shadow-lg" />
+                    <div className="relative mb-4 w-full overflow-hidden rounded-lg shadow-lg aspect-[16/9]">
+                        <Image
+                            src={mainImage || '/placeholder-car.jpg'}
+                            alt={`${car.make} ${car.model}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 100vw, 66vw"
+                            unoptimized
+                        />
                     </div>
                     {car.imageUrls.length > 1 && (
                         <div className="flex gap-2">
                             {car.imageUrls.map((url, index) => (
-                                <img 
-                                    key={index}
-                                    src={url}
-                                    alt={`Thumbnail ${index + 1}`}
-                                    className={`w-24 h-16 object-cover rounded-md cursor-pointer border-2 ${mainImage === url ? 'border-primary' : 'border-transparent'}`}
+                                <button
+                                    type="button"
+                                    key={`${url}-${index}`}
                                     onClick={() => setMainImage(url)}
-                                />
+                                    className={`relative w-24 h-16 overflow-hidden rounded-md border-2 ${mainImage === url ? 'border-primary' : 'border-transparent'}`}
+                                >
+                                    <Image
+                                        src={url || '/placeholder-car.jpg'}
+                                        alt={`Thumbnail ${index + 1}`}
+                                        fill
+                                        className="object-cover"
+                                        sizes="96px"
+                                        unoptimized
+                                    />
+                                </button>
                             ))}
                         </div>
                     )}
@@ -113,7 +172,14 @@ export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, other
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center gap-4">
-                                <img src={seller.avatarUrl || `https://api.dicebear.com/8.x/initials/svg?seed=${seller.fullName}`} alt={seller.fullName} className="w-16 h-16 rounded-full" />
+                                <Image
+                                    src={seller.avatarUrl || `https://api.dicebear.com/8.x/initials/svg?seed=${seller.fullName}`}
+                                    alt={seller.fullName}
+                                    width={64}
+                                    height={64}
+                                    className="rounded-full object-cover"
+                                    unoptimized
+                                />
                                 <div>
                                     <p className="font-bold text-lg">{seller.fullName}</p>
                                     {isVerified && (
@@ -125,7 +191,7 @@ export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, other
                                 </div>
                             </div>
                             {seller.businessDescription && (
-                                <p className="text-sm text-muted-foreground mt-4 italic">"{seller.businessDescription}"</p>
+                                <p className="text-sm text-muted-foreground mt-4 italic">&ldquo;{seller.businessDescription}&rdquo;</p>
                             )}
                         </CardContent>
                     </Card>
@@ -165,11 +231,11 @@ export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, other
                             <InfoItem label={t('form_make')} value={car.make} />
                             <InfoItem label={t('form_model')} value={car.model} />
                             <InfoItem label={t('form_year')} value={String(car.year)} />
-                            <InfoItem label={t('form_engine')} value={car.specifications.engine} />
-                            <InfoItem label={t('form_mileage')} value={car.specifications.mileage} />
-                            <InfoItem label={t('form_transmission')} value={car.specifications.transmission} />
-                            <InfoItem label={t('form_fuel_type')} value={car.specifications.fuelType} />
-                            <InfoItem label={t('form_body_type')} value={car.specifications.bodyType} />
+                            <InfoItem label={t('form_engine')} value={specifications.engine} />
+                            <InfoItem label={t('form_mileage')} value={specifications.mileage} />
+                            <InfoItem label={t('form_transmission')} value={specifications.transmission} />
+                            <InfoItem label={t('form_fuel_type')} value={specifications.fuelType} />
+                            <InfoItem label={t('form_body_type')} value={specifications.bodyType} />
                         </CardContent>
                     </Card>
                 </div>

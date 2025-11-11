@@ -1,16 +1,18 @@
 
+'use client';
+
 import React from 'react';
-import type { User, Page, Car, ToastMessage } from '../../types';
-import { useTranslation } from '../../hooks/useTranslation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
-import { MyListingsTab } from './MyListingsTab';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { Car, ToastMessage, User, NavigateHandler } from '@/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { AnalyticsTab } from './AnalyticsTab';
+import { MyListingsTab } from './MyListingsTab';
 import { ProfileTab } from './ProfileTab';
 
 interface SellerDashboardProps {
   user: User;
   onUpdateUser: (user: User) => void;
-  onNavigate: (page: Page, context?: any) => void;
+  onNavigate: NavigateHandler;
   cars: Car[];
   onDeleteCar: (carId: string) => void;
   showToast: (message: string, type?: ToastMessage['type']) => void;
@@ -36,11 +38,10 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ user, onUpdate
           <TabsTrigger value="profile">{t('profile')}</TabsTrigger>
         </TabsList>
         <TabsContent value="listings">
-          <MyListingsTab 
-            listings={sellerListings} 
+          <MyListingsTab
+            listings={sellerListings}
             onNavigate={onNavigate}
             onDeleteCar={onDeleteCar}
-            showToast={showToast}
           />
         </TabsContent>
         <TabsContent value="analytics">

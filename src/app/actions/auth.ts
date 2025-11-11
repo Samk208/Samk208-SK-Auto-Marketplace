@@ -200,7 +200,7 @@ export async function updateProfile(formData: FormData): Promise<AuthResult> {
       return { success: false, error: 'Not authenticated' };
     }
 
-    const updates: any = {
+    const updates: Record<string, string> = {
       full_name: fullName,
       updated_at: new Date().toISOString(),
     };

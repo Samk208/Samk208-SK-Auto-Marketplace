@@ -215,7 +215,7 @@ export async function getCarImageDownloadUrl(
     }
 
     return { url: data.signedUrl };
-  } catch (error) {
+  } catch {
     return { error: 'Failed to generate download URL' };
   }
 }

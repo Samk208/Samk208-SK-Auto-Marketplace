@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { signInWithEmail, signInWithGoogle } from '@/app/actions/auth';
-import { loginSchema, type LoginFormData } from '@/lib/validations/auth';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
+import { loginSchema, type LoginFormData } from '@/lib/validations/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -163,7 +163,7 @@ export default function LoginPage() {
 
         <CardFooter className="flex flex-col space-y-2">
           <div className="text-sm text-muted-foreground text-center">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className="text-primary hover:underline">
               Sign up
             </Link>

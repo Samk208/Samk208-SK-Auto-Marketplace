@@ -24,13 +24,26 @@ export const Toast: React.FC<ToastProps> = ({ message, type = 'success', onDismi
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    setVisible(true);
-    const timer = setTimeout(() => {
-      setVisible(false);
-      setTimeout(onDismiss, 300); // Wait for fade out animation
+    // Use a ref to track if component is mounted
+    let isMounted = true;
+    
+    // Set visible after mount
+    const showTimer = setTimeout(() => {
+      if (isMounted) setVisible(true);
+    }, 0);
+    
+    const hideTimer = setTimeout(() => {
+      if (isMounted) setVisible(false);
+      setTimeout(() => {
+        if (isMounted) onDismiss();
+      }, 300); // Wait for fade out animation
     }, 3000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      isMounted = false;
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
   }, [message, onDismiss]);
 
   const typeStyles = {

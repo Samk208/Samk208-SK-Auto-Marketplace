@@ -2,11 +2,8 @@
 
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
-import type { Database } from '@/types/database.types';
 import { Heart } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-
-type Favorite = Database['public']['Tables']['favorites']['Row'];
 
 // Create stable supabase client outside component to avoid unnecessary re-renders
 const supabase = createClient();

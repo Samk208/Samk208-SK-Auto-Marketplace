@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState } from 'react';
 import type { User, ToastMessage } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -7,6 +9,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Textarea } from '../ui/Textarea';
+import Image from 'next/image';
 
 interface ProfileTabProps {
   user: User;
@@ -15,7 +18,7 @@ interface ProfileTabProps {
 }
 
 const UploadIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
 );
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({ user, onUpdateUser, showToast }) => {
@@ -65,7 +68,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ user, onUpdateUser, show
       <CardContent>
         <form onSubmit={handleProfileUpdate} className="space-y-6">
           <div className="flex items-center gap-6">
-            <img src={avatar || `https://api.dicebear.com/8.x/initials/svg?seed=${fullName}`} alt={fullName} className="h-24 w-24 rounded-full object-cover" />
+            <Image
+              src={avatar || `https://api.dicebear.com/8.x/initials/svg?seed=${fullName}`}
+              alt={fullName}
+              width={96}
+              height={96}
+              className="rounded-full object-cover"
+              unoptimized
+            />
             <div>
                  <Button type="button" variant="secondary" outline onClick={handlePictureUpload}>
                     <UploadIcon className="mr-2 h-4 w-4" />

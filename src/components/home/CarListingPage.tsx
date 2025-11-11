@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { CarCard } from '@/components/car/CarCard';
 import { Input } from '@/components/ui/Input';
@@ -6,28 +8,29 @@ import { Button } from '@/components/ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Slider } from '@/components/ui/Slider';
 import { Label } from '@/components/ui/Label';
-import type { Car, User, Page, ToastMessage } from '@/types';
+import type { Car, User, ToastMessage, NavigateHandler } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
+import type { Tables } from '@/types/database.types';
 
 interface CarListingPageProps {
     cars: Car[];
     sellers: User[];
-    onNavigate: (page: Page, context?: any) => void;
+    onNavigate: NavigateHandler;
     initialSearchTerm?: string;
     showToast: (message: string, type?: ToastMessage['type']) => void;
     currentUser: User | null;
 }
 
 const SearchIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8" />
     <path d="m21 21-4.3-4.3" />
   </svg>
 );
 
 const XIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M18 6 6 18" />
     <path d="m6 6 12 12" />
   </svg>
@@ -37,8 +40,27 @@ const SaveIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 );
 
+type RawCarRow = Tables<'cars'> & {
+    currency?: string | null;
+    description?: string | null;
+};
+
+const STATUS_MAP: Record<string, Car['status']> = {
+    active: 'Active',
+    available: 'available',
+    sold: 'sold',
+    pending: 'pending',
+};
+
+const mapStatus = (status: string | null | undefined): Car['status'] => {
+    if (!status) return 'available';
+    const normalized = status.toLowerCase();
+    return STATUS_MAP[normalized] ?? 'available';
+};
+
 
 export const CarListingPage: React.FC<CarListingPageProps> = ({ cars, sellers, onNavigate, initialSearchTerm = '', showToast, currentUser }) => {
+  const supabase = createClient();
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [location, setLocation] = useState('all');
@@ -53,26 +75,32 @@ export const CarListingPage: React.FC<CarListingPageProps> = ({ cars, sellers, o
   useEffect(() => {
     setSearchTerm(initialSearchTerm);
   }, [initialSearchTerm]);
+  void cars;
 
   const locations = useMemo(
     () => ['all', ...Array.from(new Set(items.map(car => `${car.location.city}, ${car.location.country}`)))],
     [items]
   );
   
-  const mapDbCar = (c: any): Car => ({
+  const mapDbCar = (c: RawCarRow): Car => ({
     id: c.id,
     make: c.make,
     model: c.model,
     year: Number(c.year),
     price: Number(c.price),
-    currency: c.currency,
-    location: { city: c.location_city, country: c.location_country },
+    currency: c.currency ?? 'USD',
+    location: {
+      city: c.location_city ?? '',
+      country: c.location_country ?? '',
+    },
     imageUrls: Array.isArray(c.images) ? c.images : [],
-    specifications: c.specifications || {},
-    description: c.description || '',
-    status: c.status,
+    specifications: (typeof c.specifications === 'object' && c.specifications !== null
+      ? c.specifications
+      : {}) as Car['specifications'],
+    description: c.description ?? '',
+    status: mapStatus(c.status),
     dealer_id: c.dealer_id,
-    created_at: c.created_at,
+    created_at: c.created_at ?? undefined,
   });
 
   const buildQuery = useCallback(() => {
@@ -110,10 +138,10 @@ export const CarListingPage: React.FC<CarListingPageProps> = ({ cars, sellers, o
       if (pageIndex === 0) setItems(mapped);
       else setItems(prev => [...prev, ...mapped]);
       setHasMore((data || []).length === pageSize);
-    } catch (e: any) {
-      // eslint-disable-next-line no-console
-      console.error(e);
-      setError(e.message || 'Failed to load cars');
+    } catch (error: unknown) {
+      console.error(error);
+      const message = error instanceof Error ? error.message : 'Failed to load cars';
+      setError(message);
       if (pageIndex === 0) setItems([]);
     } finally {
       setLoading(false);

@@ -17,7 +17,8 @@
       "Bash(cp:*)",
       "Bash(npm run build:*)",
       "Bash(npm run type-check:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run typecheck:*)"
     ],
     "deny": [],
     "ask": []

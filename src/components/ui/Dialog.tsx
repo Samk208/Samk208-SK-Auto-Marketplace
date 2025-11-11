@@ -40,7 +40,11 @@ const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
       >
         {children}
         <button
-          onClick={() => (props as any).onOpenChange?.(false)}
+          onClick={() => {
+            if ('onOpenChange' in props && typeof props.onOpenChange === 'function') {
+              props.onOpenChange(false);
+            }
+          }}
           className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -86,4 +90,5 @@ const DialogDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttri
 DialogDescription.displayName = "DialogDescription";
 
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription };
+export { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle };
+

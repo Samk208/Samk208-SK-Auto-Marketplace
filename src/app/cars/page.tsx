@@ -3,102 +3,122 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Car, User } from '@/types/types';
 import Link from 'next/link';
 
+type CarsSearchParams = {
+  make?: string;
+  model?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  minYear?: string;
+  maxYear?: string;
+  location?: string;
+  page?: string;
+};
+
 interface CarsPageProps {
-  searchParams: {
-    make?: string;
-    model?: string;
-    minPrice?: string;
-    maxPrice?: string;
-    minYear?: string;
-    maxYear?: string;
-    location?: string;
-    page?: string;
-  };
+  searchParams: Promise<CarsSearchParams>;
 }
 
 const ITEMS_PER_PAGE = 12;
 
-/**
- * Sanitize search input to prevent SQL LIKE injection
- * Escapes % and _ characters that have special meaning in LIKE patterns
- */
-function sanitizeSearchInput(input: string): string {
-  return input.replace(/[%_]/g, '\\$&');
+function validateSearchInput(input: string): string | null {
+  const trimmed = input.trim().substring(0, 50);
+  if (!/^[a-zA-Z0-9\s\-'.]+$/.test(trimmed)) {
+    return null;
+  }
+  return trimmed;
 }
 
+const buildQueryString = (
+  base: CarsSearchParams,
+  overrides: Partial<Record<keyof CarsSearchParams, string>> = {}
+) => {
+  const merged: CarsSearchParams = { ...base, ...overrides };
+  const query = new URLSearchParams();
+  (Object.entries(merged) as Array<[keyof CarsSearchParams, string | undefined]>).forEach(
+    ([key, value]) => {
+      if (value && value.length > 0) {
+        query.set(key, value);
+      }
+    }
+  );
+  return query.toString();
+};
+
+const mapStatusToFrontend = (dbStatus: string): Car['status'] => {
+  switch (dbStatus) {
+    case 'published':
+      return 'Active';
+    case 'sold':
+      return 'sold';
+    case 'draft':
+      return 'pending';
+    case 'archived':
+      return 'Sold';
+    default:
+      return 'available';
+  }
+};
+
 export default async function CarsPage({ searchParams }: CarsPageProps) {
+  const params = await searchParams;
   const supabase = await createServerSupabaseClient();
 
-  // Get current page
-  const currentPage = parseInt(searchParams.page || '1', 10);
+  const currentPage = Math.max(1, parseInt(params.page ?? '1', 10));
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-  // Build query
-  let query = supabase
-    .from('cars')
-    .select(
-      `
-      *,
-      dealer:profiles!dealer_id(
-        id,
-        full_name,
-        avatar_url,
-        verification_status,
-        seller_rating,
-        business_name
-      )
-    `,
-      { count: 'exact' }
-    )
-    .eq('status', 'published');
+  let query = supabase.from('cars').select('*', { count: 'exact' }).eq('status', 'published');
 
-  // Apply filters with sanitized input
-  if (searchParams.make) {
-    const sanitizedMake = sanitizeSearchInput(searchParams.make);
-    query = query.ilike('make', `%${sanitizedMake}%`);
+  if (params.make) {
+    const validatedMake = validateSearchInput(params.make);
+    if (validatedMake) {
+      query = query.eq('make', validatedMake);
+    }
   }
 
-  if (searchParams.model) {
-    const sanitizedModel = sanitizeSearchInput(searchParams.model);
-    query = query.ilike('model', `%${sanitizedModel}%`);
+  if (params.model) {
+    const validatedModel = validateSearchInput(params.model);
+    if (validatedModel) {
+      query = query.eq('model', validatedModel);
+    }
   }
 
-  if (searchParams.minPrice) {
-    const parsedMinPrice = parseInt(searchParams.minPrice, 10);
-    if (!Number.isNaN(parsedMinPrice) && Number.isFinite(parsedMinPrice) && parsedMinPrice >= 0) {
+  if (params.minPrice) {
+    const parsedMinPrice = parseInt(params.minPrice, 10);
+    if (!Number.isNaN(parsedMinPrice) && parsedMinPrice >= 0) {
       query = query.gte('price', parsedMinPrice);
     }
   }
 
-  if (searchParams.maxPrice) {
-    const parsedMaxPrice = parseInt(searchParams.maxPrice, 10);
-    if (!Number.isNaN(parsedMaxPrice) && Number.isFinite(parsedMaxPrice) && parsedMaxPrice >= 0) {
+  if (params.maxPrice) {
+    const parsedMaxPrice = parseInt(params.maxPrice, 10);
+    if (!Number.isNaN(parsedMaxPrice) && parsedMaxPrice >= 0) {
       query = query.lte('price', parsedMaxPrice);
     }
   }
 
-  if (searchParams.minYear) {
-    const parsedMinYear = parseInt(searchParams.minYear, 10);
-    if (!Number.isNaN(parsedMinYear) && Number.isFinite(parsedMinYear) && Number.isInteger(parsedMinYear)) {
+  if (params.minYear) {
+    const parsedMinYear = parseInt(params.minYear, 10);
+    if (!Number.isNaN(parsedMinYear)) {
       query = query.gte('year', parsedMinYear);
     }
   }
 
-  if (searchParams.maxYear) {
-    const parsedMaxYear = parseInt(searchParams.maxYear, 10);
-    if (!Number.isNaN(parsedMaxYear) && Number.isFinite(parsedMaxYear) && Number.isInteger(parsedMaxYear)) {
+  if (params.maxYear) {
+    const parsedMaxYear = parseInt(params.maxYear, 10);
+    if (!Number.isNaN(parsedMaxYear)) {
       query = query.lte('year', parsedMaxYear);
     }
   }
 
-  if (searchParams.location) {
-    const sanitizedLocation = sanitizeSearchInput(searchParams.location);
-    query = query.or(
-      `location_city.ilike.%${sanitizedLocation}%,location_country.ilike.%${sanitizedLocation}%`
-    );
+  if (params.location) {
+    const validatedLocation = validateSearchInput(params.location);
+    if (validatedLocation) {
+      query = query.or(
+        `location_city.eq.${validatedLocation},location_country.eq.${validatedLocation}`
+      );
+    }
   }
 
-  // Execute query with pagination and error handling
   let carsData: Array<Record<string, unknown>> | null = null;
   let count: number | null = null;
 
@@ -116,87 +136,96 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
     count = result.count;
   } catch (error) {
     console.error('Error fetching cars:', error);
-    // Return safe fallback for graceful degradation
     carsData = [];
     count = 0;
   }
 
-  // Transform data
-  // Define valid car statuses with type safety
-  const VALID_STATUSES = ['draft', 'published', 'sold', 'archived'] as const;
-  type DbCarStatus = (typeof VALID_STATUSES)[number];
+  const dealerIds = Array.from(
+    new Set(
+      (carsData || [])
+        .map((car) => (typeof car.dealer_id === 'string' ? car.dealer_id : null))
+        .filter((id): id is string => Boolean(id))
+    )
+  );
 
-  // Map database status to frontend status
-  const mapStatusToFrontend = (dbStatus: string): Car['status'] => {
-    switch (dbStatus) {
-      case 'published':
-        return 'Active';
-      case 'sold':
-        return 'sold';
-      case 'draft':
-        return 'pending';
-      case 'archived':
-        return 'Sold';
-      default:
-        return 'available'; // Safe default
-    }
+  type DealerProfile = {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    business_name: string | null;
   };
 
-  const cars: Car[] = (carsData || []).map((car: Record<string, unknown>) => {
-    // Map database status to frontend status
+  let dealerProfiles: DealerProfile[] = [];
+  if (dealerIds.length > 0) {
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url, business_name')
+      .in('id', dealerIds);
+    if (profilesError) {
+      console.error('Error fetching dealer profiles:', profilesError);
+    } else if (profilesData) {
+      dealerProfiles = profilesData as DealerProfile[];
+    }
+  }
+
+  const dealerProfileMap = new Map<string, DealerProfile>();
+  dealerProfiles.forEach((profile) => {
+    dealerProfileMap.set(profile.id, profile);
+  });
+
+  const cars: Car[] = (carsData || []).map((car) => {
     const dbStatus = typeof car.status === 'string' ? car.status : 'draft';
     const mappedStatus = mapStatusToFrontend(dbStatus);
+    const currency = typeof car.currency === 'string' ? car.currency : 'USD';
+    const imageArray = Array.isArray(car.images) ? (car.images as string[]) : [];
+    const specifications =
+      (car.specifications as Record<string, unknown> | null | undefined) ?? {};
 
     return {
       id: (car.id as string) || '',
       make: (car.make as string) || '',
       model: (car.model as string) || '',
-      year: (car.year as number) || new Date().getFullYear(),
-      price: (car.price as number) || 0,
-      currency: 'USD',
+      year: typeof car.year === 'number' ? (car.year as number) : new Date().getFullYear(),
+      price: typeof car.price === 'number' ? (car.price as number) : 0,
+      currency,
       location: {
         city: (car.location_city as string) || '',
         country: (car.location_country as string) || '',
       },
-      imageUrls: (car.images as string[]) || [],
-      specifications: (car.specifications as Record<string, unknown>) || {},
+      imageUrls: imageArray,
+      specifications,
       description: (car.description_en as string) || '',
       status: mappedStatus,
       dealer_id: (car.dealer_id as string) || '',
-      images: (car.images as string[]) || [],
-      specifications_raw: car.specifications,
+      images: imageArray,
+      specifications_raw: specifications,
       location_city: (car.location_city as string) || '',
       location_country: (car.location_country as string) || '',
       created_at: (car.created_at as string) || '',
     };
   });
 
-  // Extract unique sellers
   const sellersMap = new Map<string, User>();
-  (carsData || []).forEach((car: Record<string, unknown>) => {
-    const dealer = car.dealer as Record<string, unknown> | undefined;
-    if (dealer && typeof dealer.id === 'string' && !sellersMap.has(dealer.id)) {
-      sellersMap.set(dealer.id, {
-        id: dealer.id,
+  dealerProfiles.forEach((profile) => {
+    if (!sellersMap.has(profile.id)) {
+      sellersMap.set(profile.id, {
+        id: profile.id,
         email: '',
-        fullName: (dealer.full_name as string) || '',
+        fullName: profile.full_name || '',
         role: 'seller',
-        avatarUrl: (dealer.avatar_url as string) || undefined,
-        businessDescription: (dealer.business_name as string) || undefined,
+        avatarUrl: profile.avatar_url || undefined,
+        businessName: profile.business_name || undefined,
       });
     }
   });
 
   const sellers = Array.from(sellersMap.values());
-
-  // Calculate pagination
-  const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil((count || 0) / ITEMS_PER_PAGE));
   const hasNextPage = currentPage < totalPages;
   const hasPrevPage = currentPage > 1;
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight mb-2">Browse Cars</h1>
         <p className="text-muted-foreground">
@@ -204,45 +233,39 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
         </p>
       </div>
 
-      {/* Filters Summary */}
-      {(searchParams.make ||
-        searchParams.model ||
-        searchParams.minPrice ||
-        searchParams.maxPrice ||
-        searchParams.location) && (
+      {(params.make || params.model || params.minPrice || params.maxPrice || params.location) && (
         <div className="mb-6 p-4 bg-muted rounded-lg">
           <p className="text-sm font-medium mb-2">Active Filters:</p>
           <div className="flex flex-wrap gap-2">
-            {searchParams.make && (
+            {params.make && (
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                Make: {searchParams.make}
+                Make: {params.make}
               </span>
             )}
-            {searchParams.model && (
+            {params.model && (
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                Model: {searchParams.model}
+                Model: {params.model}
               </span>
             )}
-            {searchParams.minPrice && (
+            {params.minPrice && (
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                Min: ${parseInt(searchParams.minPrice).toLocaleString()}
+                Min: ${parseInt(params.minPrice, 10).toLocaleString()}
               </span>
             )}
-            {searchParams.maxPrice && (
+            {params.maxPrice && (
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                Max: ${parseInt(searchParams.maxPrice).toLocaleString()}
+                Max: ${parseInt(params.maxPrice, 10).toLocaleString()}
               </span>
             )}
-            {searchParams.location && (
+            {params.location && (
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                Location: {searchParams.location}
+                Location: {params.location}
               </span>
             )}
           </div>
         </div>
       )}
 
-      {/* Cars Grid */}
       {cars.length > 0 ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
@@ -251,13 +274,11 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-8">
               {hasPrevPage && (
                 <a
-                  href={`/cars?${new URLSearchParams({
-                    ...searchParams,
+                  href={`/cars?${buildQueryString(params, {
                     page: (currentPage - 1).toString(),
                   })}`}
                   className="px-4 py-2 border rounded-lg hover:bg-muted transition-colors"
@@ -272,8 +293,7 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
 
               {hasNextPage && (
                 <a
-                  href={`/cars?${new URLSearchParams({
-                    ...searchParams,
+                  href={`/cars?${buildQueryString(params, {
                     page: (currentPage + 1).toString(),
                   })}`}
                   className="px-4 py-2 border rounded-lg hover:bg-muted transition-colors"
@@ -286,9 +306,7 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
         </>
       ) : (
         <div className="text-center py-12">
-          <p className="text-lg text-muted-foreground">
-            No cars found matching your criteria.
-          </p>
+          <p className="text-lg text-muted-foreground">No cars found matching your criteria.</p>
           <p className="text-sm text-muted-foreground mt-2">
             Try adjusting your filters or{' '}
             <Link href="/cars" className="text-primary hover:underline">

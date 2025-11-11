@@ -1,7 +1,9 @@
 
+'use client';
+
 import React from 'react';
 import { useFavorites } from '@/hooks/useFavorites';
-import type { Car, Page, User, ToastMessage } from '@/types';
+import type { Car, User, ToastMessage, NavigateHandler } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { CarCard } from '@/components/car/CarCard';
 import { Button } from '@/components/ui/Button';
@@ -9,7 +11,7 @@ import { Button } from '@/components/ui/Button';
 interface FavoritesPageProps {
   allCars: Car[];
   sellers: User[];
-  onNavigate: (page: Page, context?: any) => void;
+  onNavigate: NavigateHandler;
   showToast: (message: string, type?: ToastMessage['type']) => void;
   currentUser: User | null;
 }

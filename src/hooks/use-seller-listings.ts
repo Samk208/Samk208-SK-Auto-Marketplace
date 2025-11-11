@@ -1,16 +1,16 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  getSellerListings,
-  getSellerListingById,
-  createCarListing,
-  updateCarListing,
-  deleteCarListing,
-  toggleListingStatus,
-  getSellerDashboardStats,
+    createCarListing,
+    deleteCarListing,
+    getSellerDashboardStats,
+    getSellerListingById,
+    getSellerListings,
+    toggleListingStatus,
+    updateCarListing,
 } from '@/app/actions/cars';
 import type { Tables } from '@/types/database.types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Query keys for cache management
 export const sellerListingsKeys = {
@@ -180,12 +180,12 @@ export function useToggleListingStatus() {
       const previousListings = queryClient.getQueryData(sellerListingsKeys.lists());
 
       // Optimistically update cache
-      queryClient.setQueryData(sellerListingsKeys.detail(carId), (old: any) => {
-        if (!old) return old;
+      queryClient.setQueryData(sellerListingsKeys.detail(carId), (old: unknown) => {
+        if (!old || typeof old !== 'object') return old;
         return { ...old, status: newStatus };
       });
 
-      queryClient.setQueryData(sellerListingsKeys.lists(), (old: any) => {
+      queryClient.setQueryData(sellerListingsKeys.lists(), (old: unknown) => {
         if (!Array.isArray(old)) return old;
         return old.map((car: Tables<'cars'>) =>
           car.id === carId ? { ...car, status: newStatus } : car

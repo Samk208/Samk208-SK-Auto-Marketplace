@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 type Car = Tables<'cars'>;
 
@@ -72,7 +73,7 @@ const EmptyState: React.FC<{ onCreateNew?: () => void }> = ({ onCreateNew }) => 
       </div>
       <h3 className="text-lg font-semibold mb-2">No listings yet</h3>
       <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-        You haven't created any car listings yet. Start by creating your first listing to reach
+        You haven&apos;t created any car listings yet. Start by creating your first listing to reach
         potential buyers.
       </p>
       <Button onClick={onCreateNew}>
@@ -170,7 +171,7 @@ export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => 
         <CardContent>
           <p className="text-destructive">{error?.message || 'Failed to load listings'}</p>
           <Button
-            variant="outline"
+            variant="ghost"
             className="mt-4"
             onClick={() => refetch()}
           >
@@ -213,11 +214,16 @@ export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => 
               <Card key={car.id}>
                 <CardContent className="p-4">
                   <div className="flex gap-4">
-                    <img
-                      src={Array.isArray(car.images) && car.images.length > 0 ? car.images[0] : '/placeholder-car.jpg'}
-                      alt={`${car.make} ${car.model}`}
-                      className="w-24 h-16 object-cover rounded-md"
-                    />
+                    <div className="relative w-24 h-16 overflow-hidden rounded-md">
+                      <Image
+                        src={Array.isArray(car.images) && car.images.length > 0 ? car.images[0] : '/placeholder-car.jpg'}
+                        alt={`${car.make} ${car.model}`}
+                        fill
+                        className="object-cover"
+                        sizes="96px"
+                        unoptimized
+                      />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold truncate">
                         {car.year} {car.make} {car.model}
@@ -236,7 +242,7 @@ export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => 
                   <div className="flex gap-2 mt-4">
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="ghost"
                       className="flex-1"
                       onClick={() => handleEdit(car.id)}
                     >
@@ -245,7 +251,7 @@ export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => 
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="ghost"
                       className="flex-1"
                       onClick={() => handleToggleStatus(car)}
                       disabled={toggleStatusMutation.isPending}
@@ -264,7 +270,7 @@ export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => 
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="ghost"
                       onClick={() => handleDelete(car)}
                       disabled={deleteMutation.isPending}
                     >
@@ -294,11 +300,16 @@ export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => 
                   <TableRow key={car.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <img
-                          src={Array.isArray(car.images) && car.images.length > 0 ? car.images[0] : '/placeholder-car.jpg'}
-                          alt={`${car.make} ${car.model}`}
-                          className="w-16 h-12 object-cover rounded-md"
-                        />
+                        <div className="relative w-16 h-12 overflow-hidden rounded-md">
+                          <Image
+                            src={Array.isArray(car.images) && car.images.length > 0 ? car.images[0] : '/placeholder-car.jpg'}
+                            alt={`${car.make} ${car.model}`}
+                            fill
+                            className="object-cover"
+                            sizes="64px"
+                            unoptimized
+                          />
+                        </div>
                         <div>
                           <div className="font-medium">
                             {car.year} {car.make} {car.model}

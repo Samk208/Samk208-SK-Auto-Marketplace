@@ -1,26 +1,32 @@
 
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { CarCard } from '@/components/car/CarCard';
 import { Skeleton } from '@/components/ui/Skeleton';
-import type { Car, Page, User, ToastMessage } from '@/types';
+import type { Car, User, ToastMessage, NavigateHandler } from '@/types';
 
 interface AIRecommendationsProps {
   cars: Car[];
   sellers: User[];
-  onNavigate: (page: Page, context?: any) => void;
+  onNavigate: NavigateHandler;
   showToast: (message: string, type?: ToastMessage['type']) => void;
   currentUser: User | null;
 }
 
 const SparklesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9a6 6 0 0 0-9-9Z"/><path d="M5 9a2 2 0 1 0 0-4a2 2 0 0 0 0 4Z"/><path d="M19 15a2 2 0 1 0 0-4a2 2 0 0 0 0 4Z"/></svg>
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9a6 6 0 0 0-9-9Z"/><path d="M5 9a2 2 0 1 0 0-4a2 2 0 0 0 0 4Z"/><path d="M19 15a2 2 0 1 0 0-4a2 2 0 0 0 0 4Z"/></svg>
 );
 
 
 export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ cars, sellers, onNavigate, showToast, currentUser }) => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
+  void cars;
+  void sellers;
+  void onNavigate;
+  void showToast;
+  void currentUser;
 
   useEffect(() => {
     const timer = setTimeout(() => {

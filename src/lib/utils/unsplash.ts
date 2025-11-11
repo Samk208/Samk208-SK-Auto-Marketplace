@@ -212,11 +212,9 @@ export function optimizeUnsplashUrl(
   params.append('q', quality.toString());
   params.append('fm', format);
 
-  // Properly detect if URL already has query params
+  // Merge new params with existing ones using URL API
   const urlObj = new URL(url);
-  const hasExistingParams = urlObj.search.length > 0;
   
-  // Merge new params with existing ones
   params.forEach((value, key) => {
     urlObj.searchParams.set(key, value);
   });

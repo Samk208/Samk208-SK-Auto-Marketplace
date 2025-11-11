@@ -131,7 +131,7 @@ export const SellerDashboardClient: React.FC<SellerDashboardClientProps> = ({ pr
           </div>
 
           <div className="mt-6">
-            <Button variant="outline" onClick={() => router.push('/profile/edit')}>
+            <Button variant="default" outline onClick={() => router.push('/profile/edit')}>
               Edit Profile
             </Button>
           </div>

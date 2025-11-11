@@ -1,8 +1,8 @@
 
 import React from 'react';
 
-export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+// Extends HTML textarea attributes without declaring empty members
+type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => {
@@ -18,3 +18,4 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 Textarea.displayName = 'Textarea';
 
 export { Textarea };
+

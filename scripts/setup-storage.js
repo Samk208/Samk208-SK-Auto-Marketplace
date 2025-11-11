@@ -4,6 +4,8 @@
  * Run with: node scripts/setup-storage.js
  */
 
+// ESLint is disabled for this file as it's a Node.js script, not a Next.js module
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config({ path: '.env.local' });
 
@@ -37,7 +39,7 @@ async function setupStorageBuckets() {
     // Create car-images bucket
     if (!existingBucketNames.includes('car-images')) {
       console.log('\n📸 Creating car-images bucket...');
-      const { data: carImagesBucket, error: carImagesError } = await supabase.storage.createBucket('car-images', {
+      const { error: carImagesError } = await supabase.storage.createBucket('car-images', {
         public: true,
         fileSizeLimit: 5242880, // 5 MB
         allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
@@ -59,7 +61,7 @@ async function setupStorageBuckets() {
     // Create avatars bucket
     if (!existingBucketNames.includes('avatars')) {
       console.log('\n👤 Creating avatars bucket...');
-      const { data: avatarsBucket, error: avatarsError } = await supabase.storage.createBucket('avatars', {
+      const { error: avatarsError } = await supabase.storage.createBucket('avatars', {
         public: true,
         fileSizeLimit: 2097152, // 2 MB
         allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']

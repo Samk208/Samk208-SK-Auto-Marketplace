@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/Dialog';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
+import { createClient } from '../../lib/supabase';
+import type { User } from '../../types';
 import { Button } from '../ui/Button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/Dialog';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
-import { useTranslation } from '../../hooks/useTranslation';
-import type { User } from '../../types';
-import { supabase } from '../../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -30,6 +30,7 @@ const TagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'login', initialRole = 'buyer', onLoginSuccess }) => {
+  const supabase = createClient();
   const [activeTab, setActiveTab] = useState(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -74,10 +75,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       };
       onLoginSuccess(appUser);
       onClose();
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'Login failed');
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -113,10 +113,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       };
       onLoginSuccess(appUser);
       onClose();
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'Sign up failed');
+      setError(err instanceof Error ? err.message : 'Sign up failed');
     } finally {
       setLoading(false);
     }

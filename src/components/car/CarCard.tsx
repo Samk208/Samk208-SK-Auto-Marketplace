@@ -1,15 +1,17 @@
 'use client';
-import React from 'react';
-import type { Car, User, Page, ToastMessage } from '@/types/types';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+
 import { Button } from '@/components/ui/Button';
-import { useTranslation } from '@/hooks/useTranslation';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { Car, ToastMessage, User, NavigateHandler } from '@/types';
+import Image from 'next/image';
+import React from 'react';
 
 interface CarCardProps {
   car: Car;
   sellers: User[];
-  onNavigate?: (page: Page, context?: any) => void;
+  onNavigate?: NavigateHandler;
   showToast?: (message: string, type?: ToastMessage['type']) => void;
   currentUser?: User | null;
 }
@@ -36,6 +38,7 @@ export const CarCard: React.FC<CarCardProps> = ({ car, sellers, onNavigate, show
   const { isFavorite, toggleFavorite } = useFavorites();
   const seller = sellers.find(s => s.id === car.dealer_id);
   const isVerified = seller && seller.phone && seller.location;
+  const primaryImage = car.imageUrls[0] || '/placeholder-car.jpg';
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -49,19 +52,31 @@ export const CarCard: React.FC<CarCardProps> = ({ car, sellers, onNavigate, show
   
   return (
     <Card className="overflow-hidden flex flex-col transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl dark:hover:shadow-purple-500/20">
-      <CardHeader className="p-0 relative">
-        <img src={car.imageUrls[0]} alt={`${car.make} ${car.model}`} className="w-full h-48 object-cover" />
-         {isVerified && (
+      <CardHeader className="p-0">
+        <div className="relative h-48">
+          <Image
+            src={primaryImage}
+            alt={`${car.make} ${car.model}`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 33vw, 25vw"
+            unoptimized
+          />
+          {isVerified && (
             <div className="absolute top-2 left-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                <CheckCircleIcon className="w-3.5 h-3.5 mr-1" />
-                {t('verified_seller')}
+              <CheckCircleIcon className="w-3.5 h-3.5 mr-1" />
+              {t('verified_seller')}
             </div>
-        )}
-        {currentUser && (
-            <button onClick={handleFavoriteClick} className="absolute top-2 right-2 p-2 rounded-full bg-background/70 hover:bg-background text-red-500 transition-colors">
-                <HeartIcon isFavorite={isFavorite(car.id)} className="w-5 h-5" />
+          )}
+          {currentUser && (
+            <button
+              onClick={handleFavoriteClick}
+              className="absolute top-2 right-2 p-2 rounded-full bg-background/70 hover:bg-background text-red-500 transition-colors"
+            >
+              <HeartIcon isFavorite={isFavorite(car.id)} className="w-5 h-5" />
             </button>
-        )}
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-4 flex-grow flex flex-col">
         <div className="flex justify-between items-start">

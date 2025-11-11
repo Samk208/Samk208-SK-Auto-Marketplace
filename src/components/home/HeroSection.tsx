@@ -1,7 +1,8 @@
- 'use client';
+'use client';
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/Button';
+import Image from 'next/image';
 
 interface HeroSectionProps {
   onFindCar?: () => void;
@@ -15,16 +16,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onFindCar, onStartSell
 
   return (
     <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center text-center text-white overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800 z-10">
-        <img
+      <div className="absolute inset-0 z-0">
+        <Image
           src="https://picsum.photos/seed/hero-bg/1920/1080"
           alt="Modern car on a road"
-          className="w-full h-full object-cover opacity-30"
+          fill
+          className="object-cover opacity-30"
+          priority
+          unoptimized
         />
       </div>
-       <div className="absolute inset-0 bg-gradient-to-r from-purple-900/50 via-blue-900/50 to-transparent z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800 z-10 opacity-80" />
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-900/50 via-blue-900/50 to-transparent z-20" />
       
-      <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-30 container mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight mb-4 animate-fade-in-down">
           {t('hero_title')}
         </h1>

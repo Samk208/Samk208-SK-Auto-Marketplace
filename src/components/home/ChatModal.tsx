@@ -1,9 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+'use client';
+
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { Car, User, ChatMessage } from '@/types';
+import Image from 'next/image';
 
 interface ChatModalProps {
   isOpen: boolean;
@@ -20,9 +23,10 @@ const SendIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, car, seller, currentUser }) => {
     const { t } = useTranslation();
     const initialMessage = t('initial_chat_message').replace('{make}', car.make).replace('{model}', car.model);
+    const messageCounterRef = useRef(1);
     
-    const [messages, setMessages] = useState<ChatMessage[]>([
-        { id: `msg-${Date.now()}`, text: initialMessage, sender: 'user', timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+    const [messages, setMessages] = useState<ChatMessage[]>(() => [
+        { id: 'msg-1', text: initialMessage, sender: 'user', timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
     ]);
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -32,13 +36,18 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, car, sell
     }
     
     useEffect(scrollToBottom, [messages]);
+    
+    const getNextMessageId = useCallback(() => {
+        messageCounterRef.current += 1;
+        return `msg-${messageCounterRef.current}`;
+    }, []);
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
         if (!newMessage.trim()) return;
 
         const userMessage: ChatMessage = {
-            id: `msg-${Date.now()}`,
+            id: getNextMessageId(),
             text: newMessage,
             sender: 'user',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -51,7 +60,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, car, sell
         // Simulate a seller response
         setTimeout(() => {
             const sellerResponse: ChatMessage = {
-                id: `msg-${Date.now() + 1}`,
+                id: getNextMessageId(),
                 text: `Thank you for your interest in the ${car.make} ${car.model}. I'll get back to you shortly.`,
                 sender: 'seller',
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -73,12 +82,30 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, car, sell
                 <div className="flex-grow overflow-y-auto p-4 space-y-4">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                            {msg.sender === 'seller' && <img src={seller.avatarUrl} className="w-8 h-8 rounded-full" />}
+                            {msg.sender === 'seller' && (
+                                <Image
+                                    src={seller.avatarUrl || `https://api.dicebear.com/8.x/initials/svg?seed=${seller.fullName}`}
+                                    alt={seller.fullName}
+                                    width={32}
+                                    height={32}
+                                    className="rounded-full object-cover"
+                                    unoptimized
+                                />
+                            )}
                             <div className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${msg.sender === 'user' ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-secondary rounded-bl-none'}`}>
                                 <p className="text-sm">{msg.text}</p>
                                 <p className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-primary-foreground/70' : 'text-secondary-foreground/70'} text-right`}>{msg.timestamp}</p>
                             </div>
-                             {msg.sender === 'user' && <img src={currentUser.avatarUrl} className="w-8 h-8 rounded-full" />}
+                            {msg.sender === 'user' && (
+                                <Image
+                                    src={currentUser.avatarUrl || `https://api.dicebear.com/8.x/initials/svg?seed=${currentUser.fullName ?? 'User'}`}
+                                    alt={currentUser.fullName ?? 'Current user avatar'}
+                                    width={32}
+                                    height={32}
+                                    className="rounded-full object-cover"
+                                    unoptimized
+                                />
+                            )}
                         </div>
                     ))}
                     <div ref={messagesEndRef} />

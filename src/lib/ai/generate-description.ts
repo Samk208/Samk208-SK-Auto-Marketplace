@@ -4,6 +4,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import stableStringify from 'json-stable-stringify';
 import { cache } from '../cache/redis';
 
 if (!process.env.GEMINI_API_KEY) {
@@ -29,23 +30,6 @@ export interface CarDescriptions {
   ko: string;
   fr: string;
   sw: string;
-}
-
-/**
- * Deterministic JSON stringifier that sorts keys to ensure consistent cache keys
- */
-function stableStringify(obj: unknown): string {
-  if (obj === null || obj === undefined) return String(obj);
-  if (typeof obj !== 'object') return JSON.stringify(obj);
-  if (Array.isArray(obj)) {
-    return '[' + obj.map(stableStringify).join(',') + ']';
-  }
-  const sortedKeys = Object.keys(obj).sort();
-  const pairs = sortedKeys.map(key => {
-    const val = (obj as Record<string, unknown>)[key];
-    return JSON.stringify(key) + ':' + stableStringify(val);
-  });
-  return '{' + pairs.join(',') + '}';
 }
 
 /**

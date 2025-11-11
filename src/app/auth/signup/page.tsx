@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signUpWithEmail, signInWithGoogle } from '@/app/actions/auth';
 import { signupSchema, type SignupFormData } from '@/lib/validations/auth';
@@ -25,8 +25,8 @@ export default function SignupPage() {
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -35,7 +35,10 @@ export default function SignupPage() {
     },
   });
 
-  const role = watch('role');
+  const role = useWatch({
+    control,
+    name: 'role',
+  }) ?? 'buyer';
 
   const onSubmit = async (data: SignupFormData) => {
     setError(null);

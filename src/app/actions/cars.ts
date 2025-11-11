@@ -1,9 +1,8 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
-import type { Database, Tables, Inserts, Updates } from '@/types/database.types';
+import type { Inserts, Updates } from '@/types/database.types';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 // Validation schema for car creation/update
@@ -22,7 +21,7 @@ const carSchema = z.object({
   description_ko: z.string().optional().nullable(),
   description_fr: z.string().optional().nullable(),
   description_sw: z.string().optional().nullable(),
-  specifications: z.record(z.any()).optional().nullable(),
+  specifications: z.record(z.string(), z.any()).optional().nullable(),
   status: z.enum(['draft', 'published', 'sold', 'archived']).default('draft'),
   shipping_available: z.boolean().default(false),
 });
@@ -133,12 +132,13 @@ export async function createCarListing(formData: CarFormData) {
   if (!validationResult.success) {
     return {
       data: null,
-      error: validationResult.error.errors.map((e) => e.message).join(', '),
+      error: validationResult.error.issues.map((e) => e.message).join(', '),
     };
   }
 
   const carData: Inserts<'cars'> = {
     ...validationResult.data,
+    specifications: validationResult.data.specifications as any,
     dealer_id: user.id,
     view_count: 0,
     inquiry_count: 0,
@@ -199,12 +199,13 @@ export async function updateCarListing(carId: string, formData: Partial<CarFormD
   if (!validationResult.success) {
     return {
       data: null,
-      error: validationResult.error.errors.map((e) => e.message).join(', '),
+      error: validationResult.error.issues.map((e) => e.message).join(', '),
     };
   }
 
   const updateData: Updates<'cars'> = {
     ...validationResult.data,
+    specifications: validationResult.data.specifications as any,
     updated_at: new Date().toISOString(),
   };
 

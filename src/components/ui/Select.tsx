@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 const ChevronDownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -52,11 +52,22 @@ const Select: React.FC<{ children: React.ReactNode; value: string; onValueChange
   );
 };
 
-const SelectTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(({ children, className, ...props }, ref) => {
+const SelectTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(({ children, className = '', ...props }, ref) => {
     const { open, setOpen, triggerRef, displayValue } = useSelectContext();
+    const handleRef = useCallback(
+        (node: HTMLButtonElement | null) => {
+            triggerRef.current = node;
+            if (typeof ref === 'function') {
+                ref(node);
+            } else if (ref) {
+                (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+            }
+        },
+        [ref, triggerRef]
+    );
     return (
         <button
-            ref={triggerRef}
+            ref={handleRef}
             onClick={() => setOpen(!open)}
             className={`flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
             {...props}

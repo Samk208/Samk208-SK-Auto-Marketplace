@@ -3,6 +3,15 @@ import { HeroSection } from '@/components/home/HeroSection';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Car, User } from '@/types/types';
 
+interface DealerProfile {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  verification_status: string | null;
+  seller_rating: number | null;
+  business_name: string | null;
+}
+
 export default async function HomePage() {
   const supabase = await createServerSupabaseClient();
 
@@ -37,18 +46,7 @@ export default async function HomePage() {
   // Fetch featured cars with seller information
   const { data: carsData, error: carsError } = await supabase
     .from('cars')
-    .select(
-      `
-      *,
-      dealer:profiles!dealer_id(
-        id,
-        full_name,
-        avatar_url,
-        verification_status,
-        seller_rating
-      )
-    `
-    )
+    .select('*')
     .eq('featured', true)
     .eq('status', 'published')
     .order('created_at', { ascending: false })
@@ -59,9 +57,9 @@ export default async function HomePage() {
     console.error('Error fetching featured cars:', carsError);
   }
 
-  // Define valid car statuses with type safety
-  const VALID_STATUSES = ['draft', 'published', 'sold', 'archived'] as const;
-  type DbCarStatus = (typeof VALID_STATUSES)[number];
+  // Define valid car statuses for documentation (not used in runtime)
+  // const VALID_STATUSES = ['draft', 'published', 'sold', 'archived'] as const;
+  // type DbCarStatus = (typeof VALID_STATUSES)[number];
 
   // Map database status to frontend status
   const mapStatusToFrontend = (dbStatus: string): Car['status'] => {
@@ -79,48 +77,72 @@ export default async function HomePage() {
     }
   };
 
-  // Transform data to match frontend types
+  const dealerIds = Array.from(
+    new Set(
+      (carsData || [])
+        .map((car) => (typeof car.dealer_id === 'string' ? car.dealer_id : null))
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+
+  let dealerProfiles: DealerProfile[] = [];
+  if (dealerIds.length > 0) {
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url, verification_status, seller_rating, business_name')
+      .in('id', dealerIds);
+    if (profilesError) {
+      console.error('Error fetching dealer profiles:', profilesError);
+    } else if (profilesData) {
+      dealerProfiles = profilesData as DealerProfile[];
+    }
+  }
+
   const featuredCars: Car[] = (carsData || []).map((car) => {
     // Map database status to frontend status with validation
     const dbStatus = typeof car.status === 'string' ? car.status : 'draft';
     const validatedStatus = mapStatusToFrontend(dbStatus);
+    const imageArray = Array.isArray(car.images) ? (car.images as string[]) : [];
+    const specifications =
+      (car.specifications as Record<string, unknown> | null | undefined) ?? {};
+    const currency = typeof car.currency === 'string' ? (car.currency as string) : 'USD';
 
     return {
       id: car.id,
       make: car.make,
       model: car.model,
       year: car.year,
-      price: car.price,
-      currency: 'USD', // Default currency
+      price: car.price ?? 0,
+      currency,
       location: {
-        city: car.location_city,
-        country: car.location_country,
+        city: (car.location_city as string) || '',
+        country: (car.location_country as string) || '',
       },
-      imageUrls: car.images || [],
-      specifications: car.specifications || {},
-      description: car.description_en || '', // Default to English description
+      imageUrls: imageArray,
+      specifications,
+      description: (car.description_en as string) || '',
       status: validatedStatus,
       dealer_id: car.dealer_id,
       // Include database fields for compatibility
-      images: car.images,
-      specifications_raw: car.specifications,
-      location_city: car.location_city,
-      location_country: car.location_country,
-      created_at: car.created_at,
+      images: imageArray,
+      specifications_raw: specifications,
+      location_city: (car.location_city as string) || '',
+      location_country: (car.location_country as string) || '',
+      created_at: (car.created_at as string) || '',
     };
   });
 
   // Extract unique sellers from cars
   const sellersMap = new Map<string, User>();
-  (carsData || []).forEach((car) => {
-    if (car.dealer && !sellersMap.has(car.dealer.id)) {
-      sellersMap.set(car.dealer.id, {
-        id: car.dealer.id,
+  dealerProfiles.forEach((profile) => {
+    if (!sellersMap.has(profile.id)) {
+      sellersMap.set(profile.id, {
+        id: profile.id,
         email: '', // Email not needed for display
-        fullName: car.dealer.full_name || '',
+        fullName: profile.full_name || '',
         role: 'seller', // Dealers are sellers in the frontend
-        avatarUrl: car.dealer.avatar_url || undefined,
-        businessDescription: car.dealer.business_name || undefined,
+        avatarUrl: profile.avatar_url || undefined,
+        businessName: profile.business_name || undefined,
       });
     }
   });
