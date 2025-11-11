@@ -1,3 +1,102 @@
-npm warn exec The following package was not found and will be installed: supabase@2.54.11
-npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
-2025/11/09 00:24:49 Access token not provided. Supply an access token by running supabase login or setting the SUPABASE_ACCESS_TOKEN environment variable.
+// Database types - To be generated from Supabase
+// Run: npx supabase gen types typescript --local > src/types/database.types.ts
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          avatar_url: string | null
+          updated_at: string | null
+          role: 'buyer' | 'seller' | 'admin' | null
+        }
+        Insert: {
+          id: string
+          full_name?: string | null
+          avatar_url?: string | null
+          updated_at?: string | null
+          role?: 'buyer' | 'seller' | 'admin' | null
+        }
+        Update: {
+          id?: string
+          full_name?: string | null
+          avatar_url?: string | null
+          updated_at?: string | null
+          role?: 'buyer' | 'seller' | 'admin' | null
+        }
+      }
+      cars: {
+        Row: {
+          id: string
+          make: string
+          model: string
+          year: number
+          price: number
+          currency: string
+          description: string | null
+          location_country: string
+          location_city: string
+          images: string[]
+          status: 'draft' | 'published' | 'sold' | 'archived'
+          specifications: Json | null
+          dealer_id: string
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          make: string
+          model: string
+          year: number
+          price: number
+          currency?: string
+          description?: string | null
+          location_country: string
+          location_city: string
+          images?: string[]
+          status?: 'draft' | 'published' | 'sold' | 'archived'
+          specifications?: Json | null
+          dealer_id: string
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          make?: string
+          model?: string
+          year?: number
+          price?: number
+          currency?: string
+          description?: string | null
+          location_country?: string
+          location_city?: string
+          images?: string[]
+          status?: 'draft' | 'published' | 'sold' | 'archived'
+          specifications?: Json | null
+          dealer_id?: string
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+  }
+}
