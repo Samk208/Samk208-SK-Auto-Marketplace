@@ -1,6 +1,8 @@
-// Placeholder for Supabase-generated types
-// TODO: Generate actual types using:
-// npx supabase gen types typescript --project-id teyloksuvmmhqixjqoch > src/types/database.types.ts
+// Generated from Supabase Schema
+// Database: teyloksuvmmhqixjqoch
+// Schema: public
+// Generated: 2025-11-11
+// Based on: manual_migration.sql (applied as per SUPABASE-STATUS-REPORT.md)
 
 export type Json =
   | string
@@ -19,7 +21,7 @@ export interface Database {
           email: string
           full_name: string
           avatar_url: string | null
-          role: 'buyer' | 'seller'
+          role: 'buyer' | 'dealer'
           phone_number: string | null
           language_preference: 'en' | 'ko' | 'fr' | 'sw'
           country: string | null
@@ -28,13 +30,14 @@ export interface Database {
           business_name: string | null
           business_registration: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id: string
           email: string
           full_name: string
           avatar_url?: string | null
-          role?: 'buyer' | 'seller'
+          role?: 'buyer' | 'dealer'
           phone_number?: string | null
           language_preference?: 'en' | 'ko' | 'fr' | 'sw'
           country?: string | null
@@ -43,13 +46,14 @@ export interface Database {
           business_name?: string | null
           business_registration?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
           email?: string
           full_name?: string
           avatar_url?: string | null
-          role?: 'buyer' | 'seller'
+          role?: 'buyer' | 'dealer'
           phone_number?: string | null
           language_preference?: 'en' | 'ko' | 'fr' | 'sw'
           country?: string | null
@@ -58,7 +62,9 @@ export interface Database {
           business_name?: string | null
           business_registration?: string | null
           created_at?: string
+          updated_at?: string
         }
+        Relationships: []
       }
       cars: {
         Row: {
@@ -142,6 +148,14 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "cars_dealer_id_fkey"
+            columns: ["dealer_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       conversations: {
         Row: {
@@ -168,6 +182,26 @@ export interface Database {
           last_message_at?: string | null
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_buyer_id_fkey"
+            columns: ["buyer_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_seller_id_fkey"
+            columns: ["seller_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_car_id_fkey"
+            columns: ["car_id"]
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       messages: {
         Row: {
@@ -197,6 +231,20 @@ export interface Database {
           read_at?: string | null
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       favorites: {
         Row: {
@@ -217,10 +265,46 @@ export interface Database {
           car_id?: string
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_car_id_fkey"
+            columns: ["car_id"]
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
-    Views: {}
-    Functions: {}
-    Enums: {}
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      increment_car_views: {
+        Args: {
+          car_id: string
+        }
+        Returns: undefined
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
+
+// Type helpers
+export type Tables<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Row']
+export type Inserts<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Insert']
+export type Updates<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Update']
