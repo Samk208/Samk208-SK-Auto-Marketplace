@@ -55,7 +55,7 @@ DROP POLICY IF EXISTS "Users can delete their own car images" ON storage.objects
 CREATE POLICY "Anyone can view car images" ON storage.objects FOR
 SELECT TO public USING (bucket_id = 'car-images');
 
--- 2. Allow authenticated users to upload car images
+-- 2. Allow authenticated users to upload car images (must be in their own folder)
 CREATE POLICY "Authenticated users can upload car images" ON storage.objects FOR
 INSERT
     TO authenticated
@@ -63,6 +63,7 @@ WITH
     CHECK (
         bucket_id = 'car-images'
         AND auth.role () = 'authenticated'
+        AND (storage.foldername(name))[1] = auth.uid()::text
     );
 
 -- 3. Allow users to update their own car images
@@ -150,8 +151,10 @@ FROM pg_policies
 WHERE
     tablename = 'objects'
     AND schemaname = 'storage'
-    AND policyname LIKE '%car images%'
-    OR policyname LIKE '%avatars%'
+    AND (
+        policyname LIKE '%car images%'
+        OR policyname LIKE '%avatars%'
+    )
 ORDER BY policyname;
 
 -- Expected Results:

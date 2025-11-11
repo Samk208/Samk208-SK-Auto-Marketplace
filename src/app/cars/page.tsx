@@ -1,6 +1,7 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { CarCard } from '@/components/car/CarCard';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Car, User } from '@/types/types';
+import Link from 'next/link';
 
 interface CarsPageProps {
   searchParams: {
@@ -16,6 +17,14 @@ interface CarsPageProps {
 }
 
 const ITEMS_PER_PAGE = 12;
+
+/**
+ * Sanitize search input to prevent SQL LIKE injection
+ * Escapes % and _ characters that have special meaning in LIKE patterns
+ */
+function sanitizeSearchInput(input: string): string {
+  return input.replace(/[%_]/g, '\\$&');
+}
 
 export default async function CarsPage({ searchParams }: CarsPageProps) {
   const supabase = await createServerSupabaseClient();
@@ -43,77 +52,137 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
     )
     .eq('status', 'published');
 
-  // Apply filters
+  // Apply filters with sanitized input
   if (searchParams.make) {
-    query = query.ilike('make', `%${searchParams.make}%`);
+    const sanitizedMake = sanitizeSearchInput(searchParams.make);
+    query = query.ilike('make', `%${sanitizedMake}%`);
   }
 
   if (searchParams.model) {
-    query = query.ilike('model', `%${searchParams.model}%`);
+    const sanitizedModel = sanitizeSearchInput(searchParams.model);
+    query = query.ilike('model', `%${sanitizedModel}%`);
   }
 
   if (searchParams.minPrice) {
-    query = query.gte('price', parseInt(searchParams.minPrice));
+    const parsedMinPrice = parseInt(searchParams.minPrice, 10);
+    if (!Number.isNaN(parsedMinPrice) && Number.isFinite(parsedMinPrice) && parsedMinPrice >= 0) {
+      query = query.gte('price', parsedMinPrice);
+    }
   }
 
   if (searchParams.maxPrice) {
-    query = query.lte('price', parseInt(searchParams.maxPrice));
+    const parsedMaxPrice = parseInt(searchParams.maxPrice, 10);
+    if (!Number.isNaN(parsedMaxPrice) && Number.isFinite(parsedMaxPrice) && parsedMaxPrice >= 0) {
+      query = query.lte('price', parsedMaxPrice);
+    }
   }
 
   if (searchParams.minYear) {
-    query = query.gte('year', parseInt(searchParams.minYear));
+    const parsedMinYear = parseInt(searchParams.minYear, 10);
+    if (!Number.isNaN(parsedMinYear) && Number.isFinite(parsedMinYear) && Number.isInteger(parsedMinYear)) {
+      query = query.gte('year', parsedMinYear);
+    }
   }
 
   if (searchParams.maxYear) {
-    query = query.lte('year', parseInt(searchParams.maxYear));
+    const parsedMaxYear = parseInt(searchParams.maxYear, 10);
+    if (!Number.isNaN(parsedMaxYear) && Number.isFinite(parsedMaxYear) && Number.isInteger(parsedMaxYear)) {
+      query = query.lte('year', parsedMaxYear);
+    }
   }
 
   if (searchParams.location) {
+    const sanitizedLocation = sanitizeSearchInput(searchParams.location);
     query = query.or(
-      `location_city.ilike.%${searchParams.location}%,location_country.ilike.%${searchParams.location}%`
+      `location_city.ilike.%${sanitizedLocation}%,location_country.ilike.%${sanitizedLocation}%`
     );
   }
 
-  // Execute query with pagination
-  const { data: carsData, count } = await query
-    .order('created_at', { ascending: false })
-    .range(offset, offset + ITEMS_PER_PAGE - 1);
+  // Execute query with pagination and error handling
+  let carsData: Array<Record<string, unknown>> | null = null;
+  let count: number | null = null;
+
+  try {
+    const result = await query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + ITEMS_PER_PAGE - 1);
+
+    if (result.error) {
+      console.error('Database query error:', result.error);
+      throw new Error(`Failed to fetch cars: ${result.error.message}`);
+    }
+
+    carsData = result.data;
+    count = result.count;
+  } catch (error) {
+    console.error('Error fetching cars:', error);
+    // Return safe fallback for graceful degradation
+    carsData = [];
+    count = 0;
+  }
 
   // Transform data
-  const cars: Car[] = (carsData || []).map((car) => ({
-    id: car.id,
-    make: car.make,
-    model: car.model,
-    year: car.year,
-    price: car.price,
-    currency: 'USD',
-    location: {
-      city: car.location_city,
-      country: car.location_country,
-    },
-    imageUrls: car.images || [],
-    specifications: car.specifications || {},
-    description: car.description_en || '',
-    status: car.status as any,
-    dealer_id: car.dealer_id,
-    images: car.images,
-    specifications_raw: car.specifications,
-    location_city: car.location_city,
-    location_country: car.location_country,
-    created_at: car.created_at,
-  }));
+  // Define valid car statuses with type safety
+  const VALID_STATUSES = ['draft', 'published', 'sold', 'archived'] as const;
+  type DbCarStatus = (typeof VALID_STATUSES)[number];
+
+  // Map database status to frontend status
+  const mapStatusToFrontend = (dbStatus: string): Car['status'] => {
+    switch (dbStatus) {
+      case 'published':
+        return 'Active';
+      case 'sold':
+        return 'sold';
+      case 'draft':
+        return 'pending';
+      case 'archived':
+        return 'Sold';
+      default:
+        return 'available'; // Safe default
+    }
+  };
+
+  const cars: Car[] = (carsData || []).map((car: Record<string, unknown>) => {
+    // Map database status to frontend status
+    const dbStatus = typeof car.status === 'string' ? car.status : 'draft';
+    const mappedStatus = mapStatusToFrontend(dbStatus);
+
+    return {
+      id: (car.id as string) || '',
+      make: (car.make as string) || '',
+      model: (car.model as string) || '',
+      year: (car.year as number) || new Date().getFullYear(),
+      price: (car.price as number) || 0,
+      currency: 'USD',
+      location: {
+        city: (car.location_city as string) || '',
+        country: (car.location_country as string) || '',
+      },
+      imageUrls: (car.images as string[]) || [],
+      specifications: (car.specifications as Record<string, unknown>) || {},
+      description: (car.description_en as string) || '',
+      status: mappedStatus,
+      dealer_id: (car.dealer_id as string) || '',
+      images: (car.images as string[]) || [],
+      specifications_raw: car.specifications,
+      location_city: (car.location_city as string) || '',
+      location_country: (car.location_country as string) || '',
+      created_at: (car.created_at as string) || '',
+    };
+  });
 
   // Extract unique sellers
   const sellersMap = new Map<string, User>();
-  (carsData || []).forEach((car) => {
-    if (car.dealer && !sellersMap.has(car.dealer.id)) {
-      sellersMap.set(car.dealer.id, {
-        id: car.dealer.id,
+  (carsData || []).forEach((car: Record<string, unknown>) => {
+    const dealer = car.dealer as Record<string, unknown> | undefined;
+    if (dealer && typeof dealer.id === 'string' && !sellersMap.has(dealer.id)) {
+      sellersMap.set(dealer.id, {
+        id: dealer.id,
         email: '',
-        fullName: car.dealer.full_name || '',
+        fullName: (dealer.full_name as string) || '',
         role: 'seller',
-        avatarUrl: car.dealer.avatar_url || undefined,
-        businessDescription: car.dealer.business_name || undefined,
+        avatarUrl: (dealer.avatar_url as string) || undefined,
+        businessDescription: (dealer.business_name as string) || undefined,
       });
     }
   });
@@ -222,9 +291,9 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
           </p>
           <p className="text-sm text-muted-foreground mt-2">
             Try adjusting your filters or{' '}
-            <a href="/cars" className="text-primary hover:underline">
+            <Link href="/cars" className="text-primary hover:underline">
               browse all cars
-            </a>
+            </Link>
             .
           </p>
         </div>

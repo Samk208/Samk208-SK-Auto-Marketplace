@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
 
 interface CarImageGalleryProps {
   images: string[];
@@ -84,7 +84,7 @@ export function CarImageGallery({ images, carName }: CarImageGalleryProps) {
             className="object-cover cursor-pointer"
             onClick={openFullscreen}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
-            priority={currentIndex === 0}
+            priority={currentIndex === 0 && images.indexOf(images[currentIndex]) === 0}
           />
 
           {/* Navigation Arrows */}
@@ -213,3 +213,4 @@ export function CarImageGallery({ images, carName }: CarImageGalleryProps) {
 }
 
 export type { CarImageGalleryProps };
+

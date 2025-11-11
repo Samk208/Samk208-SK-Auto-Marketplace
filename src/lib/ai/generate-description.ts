@@ -32,14 +32,31 @@ export interface CarDescriptions {
 }
 
 /**
+ * Deterministic JSON stringifier that sorts keys to ensure consistent cache keys
+ */
+function stableStringify(obj: unknown): string {
+  if (obj === null || obj === undefined) return String(obj);
+  if (typeof obj !== 'object') return JSON.stringify(obj);
+  if (Array.isArray(obj)) {
+    return '[' + obj.map(stableStringify).join(',') + ']';
+  }
+  const sortedKeys = Object.keys(obj).sort();
+  const pairs = sortedKeys.map(key => {
+    const val = (obj as Record<string, unknown>)[key];
+    return JSON.stringify(key) + ':' + stableStringify(val);
+  });
+  return '{' + pairs.join(',') + '}';
+}
+
+/**
  * Generate professional car descriptions in 4 languages
  * Results are cached for 7 days to reduce API costs
  */
 export async function generateCarDescription(
   carData: CarData
 ): Promise<CarDescriptions> {
-  // Create cache key from car data
-  const cacheKey = `car-desc:${JSON.stringify(carData)}`;
+  // Create deterministic cache key from car data
+  const cacheKey = `car-desc:${stableStringify(carData)}`;
 
   // Check cache first
   const cached = await cache.get<CarDescriptions>(cacheKey);
@@ -158,6 +175,6 @@ function generateFallbackDescriptions(carData: CarData): CarDescriptions {
  * Clear cached description for a car
  */
 export async function clearCarDescriptionCache(carData: CarData): Promise<void> {
-  const cacheKey = `car-desc:${JSON.stringify(carData)}`;
+  const cacheKey = `car-desc:${stableStringify(carData)}`;
   await cache.delete(cacheKey);
 }

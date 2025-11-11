@@ -37,9 +37,16 @@ export function formatMileage(mileage: number, locale: string = 'en-US'): string
  * @param dateString - ISO date string
  * @param locale - The locale to use (default: 'en-US')
  * @returns Formatted date string
+ * @throws RangeError if the date string is invalid
  */
 export function formatDate(dateString: string, locale: string = 'en-US'): string {
   const date = new Date(dateString);
+  
+  // Validate date before formatting
+  if (isNaN(date.getTime())) {
+    throw new RangeError('Invalid date string');
+  }
+  
   return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: 'long',
@@ -51,10 +58,16 @@ export function formatDate(dateString: string, locale: string = 'en-US'): string
  * Format a date string to a relative time (e.g., "2 days ago")
  * @param dateString - ISO date string
  * @param locale - The locale to use (default: 'en-US')
- * @returns Relative time string
+ * @returns Relative time string, or empty string if invalid date
  */
 export function formatRelativeTime(dateString: string, locale: string = 'en-US'): string {
   const date = new Date(dateString);
+  
+  // Validate date before calculations
+  if (isNaN(date.getTime())) {
+    return ''; // Return empty string for invalid dates
+  }
+  
   const now = new Date();
   const diffInMs = now.getTime() - date.getTime();
   const diffInSeconds = Math.floor(diffInMs / 1000);

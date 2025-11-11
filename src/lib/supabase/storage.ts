@@ -50,9 +50,12 @@ export async function uploadCarImage(
   carId: string
 ): Promise<{ path: string; publicUrl: string } | { error: string }> {
   try {
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    // Generate unique filename with safe extension handling
+    const nameParts = file.name.split('.');
+    const fileExt = nameParts.length > 1 ? nameParts.pop()?.toLowerCase() : null;
+    const fileName = fileExt 
+      ? `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+      : `${Date.now()}-${Math.random().toString(36).substring(7)}`;
     const filePath = `${userId}/${carId}/${fileName}`;
 
     // Upload file
@@ -92,7 +95,30 @@ export async function uploadAvatar(
   userId: string
 ): Promise<{ path: string; publicUrl: string } | { error: string }> {
   try {
-    const fileExt = file.name.split('.').pop();
+    // Safe extension extraction with fallback
+    const nameParts = file.name.split('.');
+    const hasExtension = nameParts.length > 1 && nameParts[nameParts.length - 1];
+    
+    // Derive extension from file.name or fallback to file.type
+    let fileExt = hasExtension ? nameParts.pop()?.toLowerCase() : null;
+    
+    // If no extension from filename, derive from MIME type
+    if (!fileExt && file.type) {
+      const mimeToExt: Record<string, string> = {
+        'image/jpeg': 'jpg',
+        'image/jpg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp',
+        'image/gif': 'gif',
+      };
+      fileExt = mimeToExt[file.type.toLowerCase()] || 'png';
+    }
+    
+    // Final fallback to 'png' if still no extension
+    if (!fileExt) {
+      fileExt = 'png';
+    }
+    
     const fileName = `avatar.${fileExt}`;
     const filePath = `${userId}/${fileName}`;
 

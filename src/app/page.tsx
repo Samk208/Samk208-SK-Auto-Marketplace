@@ -35,7 +35,7 @@ export default async function HomePage() {
   }
 
   // Fetch featured cars with seller information
-  const { data: carsData } = await supabase
+  const { data: carsData, error: carsError } = await supabase
     .from('cars')
     .select(
       `
@@ -54,30 +54,61 @@ export default async function HomePage() {
     .order('created_at', { ascending: false })
     .limit(4);
 
+  // Handle query error
+  if (carsError) {
+    console.error('Error fetching featured cars:', carsError);
+  }
+
+  // Define valid car statuses with type safety
+  const VALID_STATUSES = ['draft', 'published', 'sold', 'archived'] as const;
+  type DbCarStatus = (typeof VALID_STATUSES)[number];
+
+  // Map database status to frontend status
+  const mapStatusToFrontend = (dbStatus: string): Car['status'] => {
+    switch (dbStatus) {
+      case 'published':
+        return 'Active';
+      case 'sold':
+        return 'sold';
+      case 'draft':
+        return 'pending';
+      case 'archived':
+        return 'Sold';
+      default:
+        return 'available'; // Safe default
+    }
+  };
+
   // Transform data to match frontend types
-  const featuredCars: Car[] = (carsData || []).map((car) => ({
-    id: car.id,
-    make: car.make,
-    model: car.model,
-    year: car.year,
-    price: car.price,
-    currency: 'USD', // Default currency
-    location: {
-      city: car.location_city,
-      country: car.location_country,
-    },
-    imageUrls: car.images || [],
-    specifications: car.specifications || {},
-    description: car.description_en || '', // Default to English description
-    status: car.status as any, // Database uses different status values
-    dealer_id: car.dealer_id,
-    // Include database fields for compatibility
-    images: car.images,
-    specifications_raw: car.specifications,
-    location_city: car.location_city,
-    location_country: car.location_country,
-    created_at: car.created_at,
-  }));
+  const featuredCars: Car[] = (carsData || []).map((car) => {
+    // Map database status to frontend status with validation
+    const dbStatus = typeof car.status === 'string' ? car.status : 'draft';
+    const validatedStatus = mapStatusToFrontend(dbStatus);
+
+    return {
+      id: car.id,
+      make: car.make,
+      model: car.model,
+      year: car.year,
+      price: car.price,
+      currency: 'USD', // Default currency
+      location: {
+        city: car.location_city,
+        country: car.location_country,
+      },
+      imageUrls: car.images || [],
+      specifications: car.specifications || {},
+      description: car.description_en || '', // Default to English description
+      status: validatedStatus,
+      dealer_id: car.dealer_id,
+      // Include database fields for compatibility
+      images: car.images,
+      specifications_raw: car.specifications,
+      location_city: car.location_city,
+      location_country: car.location_country,
+      created_at: car.created_at,
+    };
+  });
 
   // Extract unique sellers from cars
   const sellersMap = new Map<string, User>();

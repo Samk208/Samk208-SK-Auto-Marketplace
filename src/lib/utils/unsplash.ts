@@ -35,6 +35,8 @@ export function getUnsplashImage(options: UnsplashImageOptions = {}): string {
     orientation = 'landscape',
   } = options;
 
+  // Note: source.unsplash.com is deprecated. This is a fallback implementation.
+  // For production, consider using the official Unsplash API with authentication.
   const baseUrl = 'https://source.unsplash.com';
   const params = new URLSearchParams();
 
@@ -47,6 +49,21 @@ export function getUnsplashImage(options: UnsplashImageOptions = {}): string {
   }
 
   return `${baseUrl}/${width}x${height}/?${params.toString()}`;
+}
+
+/**
+ * Simple string hash function for deterministic seeds
+ * @param str - String to hash
+ * @returns Numeric hash
+ */
+function simpleHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash);
 }
 
 /**
@@ -72,8 +89,8 @@ export function getCarImages(
   const query = `${carMake} ${carModel}`;
 
   for (let i = 0; i < count; i++) {
-    // Add a unique seed to get different images
-    const seed = Date.now() + i;
+    // Use deterministic seed based on car make, model, and index
+    const seed = simpleHash(`${carMake}-${carModel}-${i}`);
     images.push(
       getUnsplashImage({
         query,
@@ -195,5 +212,14 @@ export function optimizeUnsplashUrl(
   params.append('q', quality.toString());
   params.append('fm', format);
 
-  return `${url}&${params.toString()}`;
+  // Properly detect if URL already has query params
+  const urlObj = new URL(url);
+  const hasExistingParams = urlObj.search.length > 0;
+  
+  // Merge new params with existing ones
+  params.forEach((value, key) => {
+    urlObj.searchParams.set(key, value);
+  });
+
+  return urlObj.toString();
 }

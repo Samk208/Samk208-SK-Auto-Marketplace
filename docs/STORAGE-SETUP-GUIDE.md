@@ -9,6 +9,7 @@
 ## 🎯 Overview
 
 SK AutoSphere requires two Supabase Storage buckets for handling image uploads:
+
 1. **car-images** - For vehicle listing photos
 2. **avatars** - For user profile pictures
 
@@ -19,6 +20,7 @@ SK AutoSphere requires two Supabase Storage buckets for handling image uploads:
 ### Step 1: Access Supabase Storage
 
 Navigate to your Supabase project's storage section:
+
 ```
 https://supabase.com/dashboard/project/teyloksuvmmhqixjqoch/storage/buckets
 ```
@@ -30,6 +32,7 @@ https://supabase.com/dashboard/project/teyloksuvmmhqixjqoch/storage/buckets
 Click **"New Bucket"** and configure:
 
 **Bucket Settings:**
+
 ```
 Name: car-images
 Public: ✅ Yes (Allow public access)
@@ -38,6 +41,7 @@ Allowed MIME types: image/jpeg, image/png, image/webp
 ```
 
 **Why these settings:**
+
 - **Public:** Allows car images to be viewed without authentication
 - **5MB limit:** Balances image quality with performance
 - **WebP support:** Modern format with better compression
@@ -49,15 +53,16 @@ Allowed MIME types: image/jpeg, image/png, image/webp
 Click **"New Bucket"** again and configure:
 
 **Bucket Settings:**
+
 ```
 Name: avatars
-Public: ✅ Yes (Allow public access)
 Public: ✅ Yes (Allow public access)
 File size limit: 2 MB (2097152 bytes)
 Allowed MIME types: image/jpeg, image/png, image/webp
 ```
 
 **Why these settings:**
+
 - **2MB limit:** Smaller than car images, sufficient for profile pictures
 - **WebP support:** Same as car images for consistency
 
@@ -68,6 +73,7 @@ Allowed MIME types: image/jpeg, image/png, image/webp
 After creating both buckets, apply Row Level Security policies to control access.
 
 **Navigate to:**
+
 ```
 SQL Editor: https://supabase.com/dashboard/project/teyloksuvmmhqixjqoch/editor
 ```
@@ -159,6 +165,7 @@ USING (
 ### Test 1: Verify Buckets Exist
 
 Run this in SQL Editor:
+
 ```sql
 SELECT
   name,
@@ -170,6 +177,7 @@ WHERE name IN ('car-images', 'avatars');
 ```
 
 **Expected Result:**
+
 ```
 name         | public | file_size_limit | allowed_mime_types
 -------------|--------|-----------------|--------------------
@@ -182,6 +190,7 @@ avatars      | true   | 2097152         | {image/jpeg,image/png,image/webp}
 ### Test 2: Verify RLS Policies
 
 Run this in SQL Editor:
+
 ```sql
 SELECT
   schemaname,
@@ -198,6 +207,7 @@ ORDER BY policyname;
 
 **Expected Result:**
 You should see 8 policies total:
+
 - 4 policies for `car-images` (SELECT, INSERT, UPDATE, DELETE)
 - 4 policies for `avatars` (SELECT, INSERT, UPDATE, DELETE)
 
@@ -209,37 +219,39 @@ Once setup is complete, test with this code snippet:
 
 ```typescript
 // Test car image upload
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@/lib/supabase/client";
 
 const supabase = createClient();
 
 async function testUpload() {
   // Create a test file (in real app, this comes from file input)
-  const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+  const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
-    console.error('Not authenticated');
+    console.error("Not authenticated");
     return;
   }
 
   const fileName = `${user.id}/test-car/test-${Date.now()}.jpg`;
 
   const { data, error } = await supabase.storage
-    .from('car-images')
+    .from("car-images")
     .upload(fileName, file);
 
   if (error) {
-    console.error('Upload failed:', error);
+    console.error("Upload failed:", error);
   } else {
-    console.log('Upload successful:', data);
+    console.log("Upload successful:", data);
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from('car-images')
+      .from("car-images")
       .getPublicUrl(fileName);
 
-    console.log('Public URL:', urlData.publicUrl);
+    console.log("Public URL:", urlData.publicUrl);
   }
 }
 ```
@@ -249,6 +261,7 @@ async function testUpload() {
 ## 📂 File Organization Structure
 
 ### Car Images
+
 ```
 car-images/
 ├── {user_id_1}/
@@ -265,6 +278,7 @@ car-images/
 ```
 
 ### Avatars
+
 ```
 avatars/
 ├── {user_id_1}/
@@ -276,6 +290,7 @@ avatars/
 ```
 
 **Benefits of this structure:**
+
 - Easy to find all images for a user
 - Easy to delete all images when a car/user is deleted
 - RLS policies work naturally (check folder name = user ID)
@@ -285,15 +300,18 @@ avatars/
 ## 🔒 Security Considerations
 
 ### What's Protected:
+
 ✅ Only authenticated users can upload
 ✅ Users can only update/delete their own files
 ✅ Public read access for all images (required for marketplace)
 
 ### What's NOT Protected:
+
 ⚠️ Image URLs are public - anyone with the URL can view
 ⚠️ No file content validation (relies on MIME type checking)
 
 ### Recommendations:
+
 1. **Enable virus scanning** (Supabase Pro feature)
 2. **Monitor storage usage** to prevent abuse
 3. **Implement rate limiting** on upload endpoints
@@ -308,11 +326,14 @@ avatars/
 **Cause:** RLS policies not applied or user not authenticated
 
 **Solution:**
+
 ```typescript
 // Ensure user is authenticated before upload
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 if (!user) {
-  throw new Error('Must be logged in to upload');
+  throw new Error("Must be logged in to upload");
 }
 ```
 
@@ -323,15 +344,16 @@ if (!user) {
 **Cause:** File larger than bucket's size limit
 
 **Solution:**
+
 ```typescript
 // Compress images before upload
-import imageCompression from 'browser-image-compression';
+import imageCompression from "browser-image-compression";
 
 const compressed = await imageCompression(file, {
   maxSizeMB: 1,
   maxWidthOrHeight: 1920,
   useWebWorker: true,
-  fileType: 'image/webp'
+  fileType: "image/webp",
 });
 ```
 
@@ -342,6 +364,7 @@ const compressed = await imageCompression(file, {
 **Cause:** Bucket doesn't exist or wrong name
 
 **Solution:**
+
 - Verify bucket name spelling (case-sensitive)
 - Check bucket exists in Supabase dashboard
 - Ensure you're using correct project
@@ -351,16 +374,19 @@ const compressed = await imageCompression(file, {
 ## 📊 Storage Limits
 
 ### Free Tier Limits (Current):
+
 - **Storage:** 1 GB total
 - **Bandwidth:** 2 GB per month
 - **API Requests:** 50,000 per month
 
 ### Estimated Usage:
+
 - **Average car listing:** 6 images × 500 KB = 3 MB
 - **Average avatar:** 200 KB
 - **~300 car listings** = 900 MB (within free tier)
 
 ### When to Upgrade:
+
 - Exceed 1 GB storage
 - Need more than 2 GB bandwidth/month
 - Want virus scanning
@@ -386,11 +412,13 @@ After completing setup, verify:
 Once storage is set up:
 
 1. **Implement Upload Component**
+
    - Create `src/components/car/PhotoUploader.tsx`
    - Add image compression
    - Show upload progress
 
 2. **Update Car Creation Flow**
+
    - Upload images when creating listing
    - Store URLs in `cars.images` array
    - Delete old images when updating

@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
-import { Heart } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/types/database.types';
+import { Heart } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 type Favorite = Database['public']['Tables']['favorites']['Row'];
+
+// Create stable supabase client outside component to avoid unnecessary re-renders
+const supabase = createClient();
 
 interface FavoriteButtonProps {
   carId: string;
@@ -33,7 +36,6 @@ export function FavoriteButton({
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const supabase = createClient();
 
   // Check authentication status and load favorite state
   useEffect(() => {
@@ -48,7 +50,7 @@ export function FavoriteButton({
           .select('id')
           .eq('user_id', user.id)
           .eq('car_id', carId)
-          .single();
+          .maybeSingle(); // Use maybeSingle() to handle zero-rows case as null
 
         setIsFavorited(!!data);
       } else {
@@ -66,7 +68,7 @@ export function FavoriteButton({
     };
 
     checkAuth();
-  }, [carId, supabase]);
+  }, [carId]); // Stable reference: carId only
 
   const toggleFavorite = useCallback(async () => {
     setIsLoading(true);
@@ -76,21 +78,36 @@ export function FavoriteButton({
         // Authenticated user: update database
         if (isFavorited) {
           // Remove from favorites
-          await supabase
+          const { error } = await supabase
             .from('favorites')
             .delete()
             .eq('user_id', userId)
             .eq('car_id', carId);
+
+          if (error) {
+            console.error('Error removing favorite:', error);
+            throw error;
+          }
+
+          // Only update state after successful DB operation
+          setIsFavorited(false);
         } else {
           // Add to favorites
-          await supabase
+          const { error } = await supabase
             .from('favorites')
             .insert({
               user_id: userId,
               car_id: carId,
             });
+
+          if (error) {
+            console.error('Error adding favorite:', error);
+            throw error;
+          }
+
+          // Only update state after successful DB operation
+          setIsFavorited(true);
         }
-        setIsFavorited(!isFavorited);
       } else {
         // Unauthenticated user: use localStorage
         const localFavorites = localStorage.getItem('sk-autosphere-favorites');
@@ -117,10 +134,11 @@ export function FavoriteButton({
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
+      // Error is already logged, UI state remains unchanged
     } finally {
       setIsLoading(false);
     }
-  }, [carId, isFavorited, userId, supabase]);
+  }, [carId, isFavorited, userId]);
 
   return (
     <Button
@@ -141,3 +159,4 @@ export function FavoriteButton({
 }
 
 export type { FavoriteButtonProps };
+

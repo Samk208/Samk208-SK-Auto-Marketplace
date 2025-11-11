@@ -30,7 +30,7 @@ export const signupSchema = z.object({
     .min(1, 'Full name is required')
     .min(2, 'Full name must be at least 2 characters')
     .max(100, 'Full name must be less than 100 characters')
-    .regex(/^[a-zA-Z\s가-힣]+$/, 'Full name can only contain letters and spaces'),
+    .regex(/^[a-zA-Z\s\-\'가-힣]+$/, 'Full name can only contain letters, spaces, hyphens, and apostrophes'),
   email: z
     .string()
     .min(1, 'Email is required')
@@ -96,10 +96,17 @@ export type NewPasswordFormData = z.infer<typeof newPasswordSchema>;
 export const profileUpdateSchema = z.object({
   fullName: z
     .string()
-    .min(2, 'Full name must be at least 2 characters')
-    .max(100, 'Full name must be less than 100 characters')
-    .regex(/^[a-zA-Z\s가-힣]+$/, 'Full name can only contain letters and spaces')
-    .optional(),
+    .transform(v => v === '' ? undefined : v) // Convert empty string to undefined
+    .optional()
+    .refine(val => val === undefined || val.length >= 2, {
+      message: 'Full name must be at least 2 characters',
+    })
+    .refine(val => val === undefined || val.length <= 100, {
+      message: 'Full name must be less than 100 characters',
+    })
+    .refine(val => val === undefined || /^[a-zA-Z\s\-\'가-힣]+$/.test(val), {
+      message: 'Full name can only contain letters, spaces, hyphens, and apostrophes',
+    }),
   phoneNumber: z
     .string()
     .regex(/^\+?[1-9]\d{1,14}$/, 'Please enter a valid phone number')

@@ -4,18 +4,7 @@ export { createServerSupabaseClient } from './server';
 
 // Re-export storage utilities
 export {
-  getCarImageUrl,
-  getAvatarUrl,
-  uploadCarImage,
-  uploadAvatar,
-  deleteCarImage,
-  deleteCarImages,
-  getCarImageDownloadUrl,
-  listCarImages,
+    deleteCarImage,
+    deleteCarImages, getAvatarUrl, getCarImageDownloadUrl, getCarImageUrl, listCarImages, uploadAvatar, uploadCarImage
 } from './storage';
 
-// Create a default client instance for convenience
-// Note: This creates a new instance each time, which is intentional for Next.js
-import { createClient } from './client';
-
-export const supabase = createClient();

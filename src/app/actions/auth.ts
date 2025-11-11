@@ -1,8 +1,8 @@
 'use server';
 
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export type AuthResult =
   | { success: true; userId: string }
@@ -59,8 +59,20 @@ export async function signUpWithEmail(formData: FormData): Promise<AuthResult> {
     });
 
     if (profileError) {
-      // If profile creation fails, we should ideally delete the auth user
-      // But for now, just return the error
+      // Profile creation failed - cleanup orphaned auth user
+      const userId = authData.user.id;
+      console.error('Profile creation failed:', profileError.message);
+      
+      try {
+        // Attempt to delete the auth user to prevent orphaned accounts
+        const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
+        if (deleteError) {
+          console.error('Failed to cleanup auth user after profile error:', deleteError.message);
+        }
+      } catch (cleanupError) {
+        console.error('Error during auth user cleanup:', cleanupError);
+      }
+      
       return {
         success: false,
         error: 'Failed to create user profile: ' + profileError.message,
@@ -125,9 +137,6 @@ export async function signOut(): Promise<AuthResult> {
     if (error) {
       return { success: false, error: error.message };
     }
-
-    revalidatePath('/', 'layout');
-    redirect('/');
   } catch (error) {
     console.error('Logout error:', error);
     return {
@@ -135,6 +144,10 @@ export async function signOut(): Promise<AuthResult> {
       error: 'An unexpected error occurred during logout',
     };
   }
+
+  // Perform navigation outside try-catch to avoid catching NEXT_REDIRECT
+  revalidatePath('/', 'layout');
+  redirect('/');
 }
 
 /**

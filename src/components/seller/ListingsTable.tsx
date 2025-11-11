@@ -1,45 +1,44 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/AlertDialog';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '@/components/ui/Table';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/AlertDialog';
-import {
-  useSellerListings,
-  useDeleteListing,
-  useToggleListingStatus,
+    useDeleteListing,
+    useSellerListings,
+    useToggleListingStatus,
 } from '@/hooks/use-seller-listings';
-import {
-  Edit,
-  Trash2,
-  Eye,
-  EyeOff,
-  Plus,
-  TrendingUp,
-  MessageSquare,
-  MoreVertical,
-} from 'lucide-react';
 import type { Tables } from '@/types/database.types';
+import {
+    Edit,
+    Eye,
+    EyeOff,
+    MessageSquare,
+    Plus,
+    Trash2,
+    TrendingUp
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
 type Car = Tables<'cars'>;
 
@@ -101,7 +100,7 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 
 export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => {
   const router = useRouter();
-  const { data: listings, isLoading, isError, error } = useSellerListings();
+  const { data: listings, isLoading, isError, error, refetch } = useSellerListings();
   const deleteMutation = useDeleteListing();
   const toggleStatusMutation = useToggleListingStatus();
 
@@ -173,7 +172,7 @@ export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => 
           <Button
             variant="outline"
             className="mt-4"
-            onClick={() => window.location.reload()}
+            onClick={() => refetch()}
           >
             Retry
           </Button>
@@ -215,7 +214,7 @@ export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => 
                 <CardContent className="p-4">
                   <div className="flex gap-4">
                     <img
-                      src={car.images[0] || '/placeholder-car.jpg'}
+                      src={Array.isArray(car.images) && car.images.length > 0 ? car.images[0] : '/placeholder-car.jpg'}
                       alt={`${car.make} ${car.model}`}
                       className="w-24 h-16 object-cover rounded-md"
                     />
@@ -296,7 +295,7 @@ export const ListingsTable: React.FC<ListingsTableProps> = ({ onCreateNew }) => 
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <img
-                          src={car.images[0] || '/placeholder-car.jpg'}
+                          src={Array.isArray(car.images) && car.images.length > 0 ? car.images[0] : '/placeholder-car.jpg'}
                           alt={`${car.make} ${car.model}`}
                           className="w-16 h-12 object-cover rounded-md"
                         />
