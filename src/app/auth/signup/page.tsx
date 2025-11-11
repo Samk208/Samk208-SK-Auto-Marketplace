@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { signUpWithEmail, signInWithGoogle } from '@/app/actions/auth';
+import { signupSchema, type SignupFormData } from '@/lib/validations/auth';
 import { Button } from '@/components/ui/Button';
 import {
   Card,
@@ -18,15 +21,31 @@ export default function SignupPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<'buyer' | 'dealer'>('buyer');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      role: 'buyer',
+    },
+  });
+
+  const role = watch('role');
+
+  const onSubmit = async (data: SignupFormData) => {
     setError(null);
     setLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    formData.set('role', role);
+    const formData = new FormData();
+    formData.append('fullName', data.fullName);
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    formData.append('role', data.role);
 
     const result = await signUpWithEmail(formData);
 
@@ -64,7 +83,7 @@ export default function SignupPage() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {error && (
               <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
                 {error}
@@ -77,13 +96,15 @@ export default function SignupPage() {
               </label>
               <input
                 id="fullName"
-                name="fullName"
                 type="text"
-                required
+                {...register('fullName')}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="John Doe"
                 disabled={loading}
               />
+              {errors.fullName && (
+                <p className="text-sm text-destructive">{errors.fullName.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -92,13 +113,15 @@ export default function SignupPage() {
               </label>
               <input
                 id="email"
-                name="email"
                 type="email"
-                required
+                {...register('email')}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="your.email@example.com"
                 disabled={loading}
               />
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -107,17 +130,37 @@ export default function SignupPage() {
               </label>
               <input
                 id="password"
-                name="password"
                 type="password"
-                required
-                minLength={8}
+                {...register('password')}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Minimum 8 characters"
+                placeholder="At least 8 characters"
                 disabled={loading}
               />
-              <p className="text-xs text-muted-foreground">
-                Must be at least 8 characters long
-              </p>
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password.message}</p>
+              )}
+              {!errors.password && (
+                <p className="text-xs text-muted-foreground">
+                  Must contain uppercase, lowercase, and number
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                {...register('confirmPassword')}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Re-enter your password"
+                disabled={loading}
+              />
+              {errors.confirmPassword && (
+                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -125,7 +168,7 @@ export default function SignupPage() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => setRole('buyer')}
+                  onClick={() => setValue('role', 'buyer')}
                   className={`p-3 border-2 rounded-lg text-sm font-medium transition-all ${
                     role === 'buyer'
                       ? 'border-primary bg-primary/5 text-primary'
@@ -153,7 +196,7 @@ export default function SignupPage() {
 
                 <button
                   type="button"
-                  onClick={() => setRole('dealer')}
+                  onClick={() => setValue('role', 'dealer')}
                   className={`p-3 border-2 rounded-lg text-sm font-medium transition-all ${
                     role === 'dealer'
                       ? 'border-primary bg-primary/5 text-primary'
@@ -179,6 +222,9 @@ export default function SignupPage() {
                   </div>
                 </button>
               </div>
+              {errors.role && (
+                <p className="text-sm text-destructive">{errors.role.message}</p>
+              )}
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
