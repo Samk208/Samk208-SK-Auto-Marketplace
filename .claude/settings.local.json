@@ -12,7 +12,12 @@
       "Bash(git branch:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(npm install:*)",
+      "Bash(cp:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
