@@ -1,42 +1,94 @@
+'use client'
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getFavorites, toggleFavorite as toggleFavoriteAction, getFavoriteIds } from '@/app/actions/favorites'
 
-const FAVORITES_KEY = 'sk-autosphere-favorites';
+/**
+ * Hook to manage user favorites with React Query
+ */
+export function useFavorites() {
+  const queryClient = useQueryClient()
 
-export const useFavorites = () => {
-  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
-
-  useEffect(() => {
-    try {
-      const storedFavorites = window.localStorage.getItem(FAVORITES_KEY);
-      if (storedFavorites) {
-        setFavoriteIds(new Set(JSON.parse(storedFavorites)));
+  // Fetch all favorites with car details
+  const { data: favoritesData, isLoading } = useQuery({
+    queryKey: ['favorites'],
+    queryFn: async () => {
+      const result = await getFavorites()
+      if (!result.success) {
+        throw new Error(result.error)
       }
-    } catch (error) {
-      console.error('Error reading favorites from localStorage', error);
-    }
-  }, []);
+      return result.data || []
+    },
+  })
 
-  const toggleFavorite = useCallback((carId: number) => {
-    setFavoriteIds(prevIds => {
-      const newIds = new Set(prevIds);
-      if (newIds.has(carId)) {
-        newIds.delete(carId);
-      } else {
-        newIds.add(carId);
+  // Fetch favorite IDs for quick lookups
+  const { data: favoriteIdsData } = useQuery({
+    queryKey: ['favoriteIds'],
+    queryFn: async () => {
+      const result = await getFavoriteIds()
+      if (!result.success) {
+        throw new Error(result.error)
       }
-      try {
-        window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(Array.from(newIds)));
-      } catch (error) {
-        console.error('Error saving favorites to localStorage', error);
+      return new Set(result.ids || [])
+    },
+  })
+
+  // Toggle favorite mutation with optimistic update
+  const toggleMutation = useMutation({
+    mutationFn: async (carId: string) => {
+      const result = await toggleFavoriteAction(carId)
+      if (!result.success) {
+        throw new Error(result.error)
       }
-      return newIds;
-    });
-  }, []);
+      return result
+    },
+    onMutate: async (carId: string) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['favoriteIds'] })
 
-  const isFavorite = useCallback((carId: number) => {
-    return favoriteIds.has(carId);
-  }, [favoriteIds]);
+      // Snapshot previous value
+      const previousIds = queryClient.getQueryData<Set<string>>(['favoriteIds'])
 
-  return { favoriteIds, toggleFavorite, isFavorite };
-};
+      // Optimistically update
+      queryClient.setQueryData<Set<string>>(['favoriteIds'], (old) => {
+        const newSet = new Set(old || [])
+        if (newSet.has(carId)) {
+          newSet.delete(carId)
+        } else {
+          newSet.add(carId)
+        }
+        return newSet
+      })
+
+      return { previousIds }
+    },
+    onError: (err, carId, context) => {
+      // Rollback on error
+      if (context?.previousIds) {
+        queryClient.setQueryData(['favoriteIds'], context.previousIds)
+      }
+    },
+    onSettled: () => {
+      // Refetch to ensure sync
+      queryClient.invalidateQueries({ queryKey: ['favorites'] })
+      queryClient.invalidateQueries({ queryKey: ['favoriteIds'] })
+    },
+  })
+
+  const isFavorite = (carId: string) => {
+    return favoriteIdsData?.has(carId) ?? false
+  }
+
+  const toggleFavorite = (carId: string) => {
+    toggleMutation.mutate(carId)
+  }
+
+  return {
+    favorites: favoritesData || [],
+    favoriteIds: favoriteIdsData || new Set<string>(),
+    isLoading,
+    isFavorite,
+    toggleFavorite,
+    isToggling: toggleMutation.isPending,
+  }
+}
