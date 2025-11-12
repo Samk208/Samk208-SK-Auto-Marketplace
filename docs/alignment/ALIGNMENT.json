@@ -1,0 +1,120 @@
+{
+  "packages": [
+    {"package":"next","required_status":"LOCKED (^14.2.x)","found_version":"16.0.1","status":"OUT_OF_RANGE"},
+    {"package":"react","required_status":"LOCKED (18.3.x)","found_version":"19.2.0","status":"OUT_OF_RANGE"},
+    {"package":"react-dom","required_status":"LOCKED (18.3.x)","found_version":"19.2.0","status":"OUT_OF_RANGE"},
+    {"package":"typescript","required_status":"LOCKED (^5)","found_version":"^5","status":"OK"},
+    {"package":"tailwindcss","required_status":"LOCKED (^3.4.x)","found_version":"^4","status":"OUT_OF_RANGE"},
+    {"package":"@supabase/supabase-js","required_status":"LOCKED (present)","found_version":"^2.79.0","status":"OK"},
+    {"package":"@supabase/ssr","required_status":"LOCKED (present)","found_version":"^0.7.0","status":"OK"},
+    {"package":"lucide-react","required_status":"LOCKED (present)","found_version":"^0.552.0","status":"OK"},
+    {"package":"eslint","required_status":"LOCKED (present)","found_version":"^9","status":"OK"},
+    {"package":"prettier","required_status":"LOCKED (present)","found_version":null,"status":"MISSING"},
+
+    {"package":"@tanstack/react-query","required_status":"TO_INSTALL","found_version":"^5.90.7","status":"OK"},
+    {"package":"@tanstack/react-query-devtools","required_status":"TO_INSTALL","found_version":"^5.90.2","status":"OK"},
+    {"package":"react-hook-form","required_status":"TO_INSTALL","found_version":"^7.66.0","status":"OK"},
+    {"package":"zod","required_status":"TO_INSTALL","found_version":"^4.1.12","status":"OK"},
+    {"package":"@hookform/resolvers","required_status":"TO_INSTALL","found_version":"^5.2.2","status":"OK"},
+    {"package":"@google/generative-ai","required_status":"TO_INSTALL","found_version":"^0.24.1","status":"OK"},
+    {"package":"@upstash/redis","required_status":"TO_INSTALL","found_version":"^1.35.6","status":"OK"},
+    {"package":"@upstash/ratelimit","required_status":"TO_INSTALL","found_version":"^2.0.7","status":"OK"},
+    {"package":"browser-image-compression","required_status":"TO_INSTALL","found_version":"^2.0.2","status":"OK"},
+    {"package":"next-pwa","required_status":"TO_INSTALL","found_version":null,"status":"MISSING"},
+    {"package":"@lhci/cli","required_status":"TO_INSTALL","found_version":null,"status":"MISSING"},
+    {"package":"testing libs","required_status":"TO_INSTALL","found_version":null,"status":"MISSING"},
+
+    {"package":"zustand","required_status":"OPTIONAL (only if requested)","found_version":"^5.0.8","status":"REVIEW_NEEDED"}
+  ],
+  "routing": {
+    "app_router_present": true,
+    "app_dir": "src/app",
+    "routes": ["/","/cars","/favorites","/messages","/auth/login","/auth/signup","/seller-dashboard"],
+    "internal_links": {
+      "next_link_usage": "limited",
+      "evidence": [
+        {"file":"src/components/layout/Header.tsx","lines":"159-169,175-177,235-242","note":"uses <a> and <button> with router.push/onClick instead of next/link"}
+      ]
+    }
+  },
+  "styling": {
+    "tailwind_config_present": true,
+    "tailwind_version": "^4",
+    "tailwind_alignment": "OUT_OF_RANGE vs 3.4.x in preferences",
+    "shadcn_ui_usage": {
+      "present": true,
+      "evidence": ["src/components/ui/Button.tsx","src/components/ui/Card.tsx"]
+    },
+    "css_in_js_detected": false
+  },
+  "state_forms": {
+    "tanstack_query": {"present": true, "version": "^5.90.7"},
+    "react_hook_form": {"present": true, "version": "^7.66.0"},
+    "zod": {"present": true, "version": "^4.1.12"},
+    "contexts": {"present": true, "evidence": ["src/context/LanguageContext.tsx"]},
+    "ad_hoc_forms": {"notes": "Seller components appear to use local state; RHF usage elsewhere [Needs Confirmation]"}
+  },
+  "supabase": {
+    "client_files": ["src/lib/supabase/client.ts","src/lib/supabase/server.ts"],
+    "database_types": "src/types/database.types.ts",
+    "migrations": [
+      "supabase/migrations/20250109000000_baseline_schema.sql",
+      "supabase/migrations/20250109000001_add_profile_fields.sql",
+      "supabase/migrations/20250109000002_add_car_fields.sql",
+      "supabase/migrations/20250109000003_create_messaging_tables.sql",
+      "supabase/migrations/20250109000004_create_favorites_table.sql"
+    ],
+    "tables": {
+      "profiles": ["id","full_name","avatar_url","role","language_preference","country","phone_number","verification_status","seller_rating","business_name","created_at","updated_at"],
+      "cars": ["id","make","model","year","price","currency","description","description_en","description_fr","description_sw","location_country","location_city","images","status","specifications","dealer_id","featured","view_count","inquiry_count","ai_generated","shipping_available","created_at","updated_at"],
+      "conversations": ["id","car_id","buyer_id","seller_id","last_message_at","created_at"],
+      "messages": ["id","conversation_id","sender_id","content","content_translated","read_at","created_at"],
+      "favorites": ["id","user_id","car_id","created_at"]
+    },
+    "rls_summary": "Enabled on profiles, cars, conversations, messages, favorites per migrations",
+    "orm_violation": {"prisma_drizzle_typeorm_used": false}
+  },
+  "images": {
+    "next_image_usage": {
+      "present": true,
+      "evidence": ["src/components/layout/Header.tsx:218-224"]
+    },
+    "plain_img_usage": {
+      "present": true,
+      "evidence": ["src/components/car/CarCard.tsx:53"]
+    },
+    "next_config_remotePatterns": {"present": false, "file": "next.config.ts"},
+    "storage_strategy": "No Supabase Storage buckets in migrations; images are external URLs (Unsplash)",
+    "probable_missing_images_causes": [
+      "Homepage receives empty data due to Supabase env misconfig or empty DB",
+      "Remote patterns not configured if migrating to next/image for listing photos"
+    ]
+  },
+  "auth": {
+    "supabase_auth_used": true,
+    "middleware_present": true,
+    "middleware_file": "middleware.ts",
+    "nextauth_clerk_absent": true
+  },
+  "planned": {
+    "ai_gemini": {"present": true, "pkg": "@google/generative-ai"},
+    "redis_upstash": {"present": true, "pkgs": ["@upstash/redis","@upstash/ratelimit"]},
+    "pwa_next_pwa": {"present": false},
+    "lighthouse_ci": {"present": false},
+    "testing": {"present": false}
+  },
+  "env": {
+    "required_refs": ["NEXT_PUBLIC_SUPABASE_URL","NEXT_PUBLIC_SUPABASE_ANON_KEY"],
+    "where_referenced": ["src/lib/supabase/client.ts","src/lib/supabase/server.ts"],
+    "env_file_gitignored": true,
+    "netlify_config_present": false
+  },
+  "violations": [
+    {"area":"packages","item":"next@16.0.1","details":"Out of range; preferences lock Next.js 14.2.x"},
+    {"area":"packages","item":"react@19.2.0 | react-dom@19.2.0","details":"Out of range; preferences lock React 18.3.x"},
+    {"area":"styling","item":"tailwindcss@^4","details":"Out of range; preferences lock Tailwind 3.4.x"},
+    {"area":"images","item":"missing images.remotePatterns","details":"next.config.ts lacks remotePatterns for CDN/Supabase; plan requires Next <Image> with remotePatterns"},
+    {"area":"routing","item":"missing next/link for internal nav","details":"Header uses <a>/<button> with router.push; preferences favor next/link"},
+    {"area":"packages","item":"prettier","details":"Missing from package.json though required"}
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "supabase": {
+    "client_files": ["src/lib/supabase/client.ts","src/lib/supabase/server.ts"],
+    "database_types": "src/types/database.types.ts",
+    "migrations": [
+      "supabase/migrations/20250109000000_baseline_schema.sql",
+      "supabase/migrations/20250109000001_add_profile_fields.sql",
+      "supabase/migrations/20250109000002_add_car_fields.sql",
+      "supabase/migrations/20250109000003_create_messaging_tables.sql",
+      "supabase/migrations/20250109000004_create_favorites_table.sql"
+    ],
+    "tables": {
+      "profiles": ["id","full_name","avatar_url","role","language_preference","country","phone_number","verification_status","seller_rating","business_name","created_at","updated_at"],
+      "cars": ["id","make","model","year","price","currency","description","description_en","description_fr","description_sw","location_country","location_city","images","status","specifications","dealer_id","featured","view_count","inquiry_count","ai_generated","shipping_available","created_at","updated_at"],
+      "conversations": ["id","car_id","buyer_id","seller_id","last_message_at","created_at"],
+      "messages": ["id","conversation_id","sender_id","content","content_translated","read_at","created_at"],
+      "favorites": ["id","user_id","car_id","created_at"]
+    },
+    "rpc_functions": ["increment_car_views"],
+    "rls_summary": "Enabled on profiles, cars, conversations, messages, favorites per migrations",
+    "orm_violation": {"prisma_drizzle_typeorm_used": false}
+  },
+  "images": {
+    "next_image_usage": {
+      "present": true,
+      "evidence": ["src/components/layout/Header.tsx:218-224"]
+    },
+    "plain_img_usage": {
+      "present": true,
+      "evidence": ["src/components/car/CarCard.tsx:53"]
+    },
+    "next_config_remotePatterns": {"present": false, "file": "next.config.ts"},
+    "storage_strategy": "No Supabase Storage buckets in migrations; images are external URLs (Unsplash)",
+    "probable_missing_images_causes": [
+      "Homepage receives empty data due to Supabase env misconfig or empty DB",
+      "Remote patterns not configured if migrating to next/image for listing photos"
+    ]
+  },
+  "auth": {
+    "supabase_auth_used": true,
+    "middleware_present": true,
+    "middleware_file": "middleware.ts",
+    "nextauth_clerk_absent": true
+  },
+  "env": {
+    "required_refs": ["NEXT_PUBLIC_SUPABASE_URL","NEXT_PUBLIC_SUPABASE_ANON_KEY"],
+    "where_referenced": ["src/lib/supabase/client.ts","src/lib/supabase/server.ts"],
+    "env_file_gitignored": true,
+    "netlify_config_present": false
+  }
+}

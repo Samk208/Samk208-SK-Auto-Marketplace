@@ -1,0 +1,10 @@
+{
+  "violations": [
+    {"area":"packages","item":"next@16.0.1","details":"Out of range; preferences lock Next.js 14.2.x"},
+    {"area":"packages","item":"react@19.2.0 | react-dom@19.2.0","details":"Out of range; preferences lock React 18.3.x"},
+    {"area":"styling","item":"tailwindcss@^4","details":"Out of range; preferences lock Tailwind 3.4.x"},
+    {"area":"images","item":"missing images.remotePatterns","details":"next.config.ts lacks remotePatterns for CDN/Supabase; plan requires Next <Image> with remotePatterns"},
+    {"area":"routing","item":"missing next/link for internal nav","details":"Header uses <a>/<button> with router.push; preferences favor next/link"},
+    {"area":"packages","item":"prettier","details":"Missing from package.json though required"}
+  ]
+}
