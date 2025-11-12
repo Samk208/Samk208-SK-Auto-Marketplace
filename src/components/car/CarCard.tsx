@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import type { Car, User, Page, ToastMessage } from '@/types/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -30,15 +31,19 @@ const HeartIcon: React.FC<React.SVGProps<SVGSVGElement> & { isFavorite: boolean 
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
 );
 
-// Placeholder for cars without images (TODO: Add actual placeholder to /public)
-const PLACEHOLDER_CAR_IMAGE = 'https://placehold.co/600x400/e2e8f0/64748b?text=No+Image';
-
+const PLACEHOLDER_CAR_IMAGE =
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" fill="none"><rect width="640" height="360" fill="%23e2e8f0"/><text x="50%" y="50%" fill="%2364748b" font-size="32" font-family="Arial, sans-serif" text-anchor="middle" dominant-baseline="middle">Image coming soon</text></svg>';
 
 export const CarCard: React.FC<CarCardProps> = ({ car, sellers, onNavigate, showToast, currentUser }) => {
   const { t } = useTranslation();
   const { isFavorite, toggleFavorite } = useFavorites();
   const seller = sellers.find(s => s.id === car.dealer_id);
-  const isVerified = seller && seller.phone && seller.location;
+  const isVerified = Boolean(seller?.phone);
+  const initialSrc =
+    Array.isArray(car.images) && car.images.length > 0 && car.images[0]
+      ? car.images[0]
+      : PLACEHOLDER_CAR_IMAGE;
+  const [imageSrc, setImageSrc] = useState(initialSrc);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -52,25 +57,32 @@ export const CarCard: React.FC<CarCardProps> = ({ car, sellers, onNavigate, show
   
   return (
     <Card className="overflow-hidden flex flex-col transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl dark:hover:shadow-purple-500/20">
-      <CardHeader className="p-0 relative">
-        {/* TODO: Migrate to next/Image with remotePatterns for Supabase CDN and external URLs */}
-        <img
-          src={car.images?.[0] || PLACEHOLDER_CAR_IMAGE}
-          alt={car.images?.[0] ? `${car.make} ${car.model}` : 'No image available'}
-          className="w-full h-48 object-cover bg-muted"
-          onError={(e) => { e.currentTarget.src = PLACEHOLDER_CAR_IMAGE; }}
-        />
-         {isVerified && (
+      <CardHeader className="p-0">
+        <div className="relative h-48 bg-muted">
+          <Image
+            src={imageSrc}
+            alt={`${car.make} ${car.model}`.trim() || 'Vehicle image'}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            className="object-cover"
+            onError={() => setImageSrc(PLACEHOLDER_CAR_IMAGE)}
+            priority={false}
+          />
+          {isVerified && (
             <div className="absolute top-2 left-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                <CheckCircleIcon className="w-3.5 h-3.5 mr-1" />
-                {t('verified_seller')}
+              <CheckCircleIcon className="w-3.5 h-3.5 mr-1" />
+              {t('verified_seller')}
             </div>
-        )}
-        {currentUser && (
-            <button onClick={handleFavoriteClick} className="absolute top-2 right-2 p-2 rounded-full bg-background/70 hover:bg-background text-red-500 transition-colors">
-                <HeartIcon isFavorite={isFavorite(car.id)} className="w-5 h-5" />
+          )}
+          {currentUser && (
+            <button
+              onClick={handleFavoriteClick}
+              className="absolute top-2 right-2 p-2 rounded-full bg-background/70 hover:bg-background text-red-500 transition-colors"
+            >
+              <HeartIcon isFavorite={isFavorite(car.id)} className="w-5 h-5" />
             </button>
-        )}
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-4 flex-grow flex flex-col">
         <div className="flex justify-between items-start">

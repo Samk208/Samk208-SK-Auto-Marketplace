@@ -1,0 +1,54 @@
+﻿.next/types/validator.ts(116,39): error TS2307: Cannot find module '../../src/app/auth/callback/route.js' or its corresponding type declarations.
+src/app/actions/auth.ts(240,15): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+src/app/actions/cars.ts(27,21): error TS2554: Expected 2-3 arguments, but got 1.
+src/app/actions/cars.ts(154,15): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+src/components/car/CarCard.tsx(46,20): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/components/car/CarCard.tsx(62,51): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/components/car/SearchBar.tsx(2,32): error TS2307: Cannot find module '../hooks/useTranslation' or its corresponding type declarations.
+src/components/car/SearchBar.tsx(3,27): error TS2307: Cannot find module '../types' or its corresponding type declarations.
+src/components/car/SearchBar.tsx(4,24): error TS2307: Cannot find module './ui/Button' or its corresponding type declarations.
+src/components/car/SearchBar.tsx(5,23): error TS2307: Cannot find module './ui/Input' or its corresponding type declarations.
+src/components/car/SearchBar.tsx(39,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/home/AIRecommendations.tsx(3,32): error TS2307: Cannot find module '../hooks/useTranslation' or its corresponding type declarations.
+src/components/home/AIRecommendations.tsx(4,25): error TS2307: Cannot find module './CarCard' or its corresponding type declarations.
+src/components/home/AIRecommendations.tsx(5,26): error TS2307: Cannot find module './ui/Skeleton' or its corresponding type declarations.
+src/components/home/AIRecommendations.tsx(6,52): error TS2307: Cannot find module '../types' or its corresponding type declarations.
+src/components/home/ChatModal.tsx(2,66): error TS2307: Cannot find module './ui/Dialog' or its corresponding type declarations.
+src/components/home/ChatModal.tsx(3,24): error TS2307: Cannot find module './ui/Button' or its corresponding type declarations.
+src/components/home/ChatModal.tsx(4,23): error TS2307: Cannot find module './ui/Input' or its corresponding type declarations.
+src/components/home/ChatModal.tsx(5,32): error TS2307: Cannot find module '../hooks/useTranslation' or its corresponding type declarations.
+src/components/home/ChatModal.tsx(6,45): error TS2307: Cannot find module '../types' or its corresponding type declarations.
+src/components/home/ChatModal.tsx(91,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/home/HowItWorksSection.tsx(2,32): error TS2307: Cannot find module '../hooks/useTranslation' or its corresponding type declarations.
+src/components/home/Statistics.tsx(2,32): error TS2307: Cannot find module '../hooks/useTranslation' or its corresponding type declarations.
+src/components/layout/Header.tsx(131,32): error TS2339: Property 'full_name' does not exist on type 'never'.
+src/components/layout/Header.tsx(132,30): error TS2339: Property 'role' does not exist on type 'never'.
+src/components/layout/Header.tsx(133,30): error TS2339: Property 'avatar_url' does not exist on type 'never'.
+src/components/seller/ListCarPage.tsx(238,69): error TS2339: Property 'seller_id' does not exist on type '{ id: string; make: string; model: string; year: number; price: number; currency: string; description: string | null; description_en: string | null; description_fr: string | null; description_sw: string | null; ... 12 more ...; updated_at: string | null; }'.
+src/components/seller/MyListingsTab.tsx(123,96): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/components/seller/MyListingsTab.tsx(141,65): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/components/seller/ProfileTab.tsx(3,21): error TS2305: Module '"../../types"' has no exported member 'ToastMessage'.
+src/components/seller/ProfileTab.tsx(23,49): error TS2551: Property 'fullName' does not exist on type 'User'. Did you mean 'full_name'?
+src/components/seller/ProfileTab.tsx(24,43): error TS2339: Property 'phone' does not exist on type 'User'.
+src/components/seller/ProfileTab.tsx(25,49): error TS2339: Property 'location' does not exist on type 'User'.
+src/components/seller/ProfileTab.tsx(26,55): error TS2339: Property 'businessDescription' does not exist on type 'User'.
+src/components/seller/ProfileTab.tsx(27,45): error TS2551: Property 'avatarUrl' does not exist on type 'User'. Did you mean 'avatar_url'?
+src/components/seller/SellerDashboard.tsx(27,44): error TS2339: Property 'role' does not exist on type 'never'.
+src/components/seller/SellerDashboard.tsx(50,31): error TS2339: Property 'full_name' does not exist on type 'never'.
+src/components/seller/SellerDashboard.tsx(56,23): error TS2339: Property 'full_name' does not exist on type 'never'.
+src/components/seller/SellerDashboard.tsx(57,24): error TS2339: Property 'avatar_url' does not exist on type 'never'.
+src/components/seller/SellerDashboard.tsx(58,20): error TS2339: Property 'role' does not exist on type 'never'.
+src/components/seller/SellerDashboard.tsx(59,20): error TS2339: Property 'phone_number' does not exist on type 'never'.
+src/components/seller/SellerDashboard.tsx(60,23): error TS2339: Property 'country' does not exist on type 'never'.
+src/components/seller/SellerDashboard.tsx(61,34): error TS2339: Property 'business_description' does not exist on type 'never'.
+src/components/seller/SellerDashboard.tsx(81,13): error TS2322: Type '{ id: string; make: string; model: string; year: number; price: number; currency: string; description: string | null; description_en: string | null; description_fr: string | null; description_sw: string | null; ... 12 more ...; updated_at: string | null; }[]' is not assignable to type 'Car[]'.
+  Type '{ id: string; make: string; model: string; year: number; price: number; currency: string; description: string | null; description_en: string | null; description_fr: string | null; description_sw: string | null; ... 12 more ...; updated_at: string | null; }' is missing the following properties from type 'Car': location, imageUrls
+src/components/seller/SellerDashboard.tsx(93,13): error TS2322: Type '((message: string, type?: "error" | "success" | "info" | undefined) => void) | undefined' is not assignable to type '(message: string, type?: any) => void'.
+  Type 'undefined' is not assignable to type '(message: string, type?: any) => void'.
+src/components/ui/Select.tsx(49,75): error TS2322: Type 'RefObject<HTMLButtonElement | null>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+  Type 'HTMLButtonElement | null' is not assignable to type 'HTMLButtonElement'.
+    Type 'null' is not assignable to type 'HTMLButtonElement'.
+src/lib/constants.ts(2,32): error TS2307: Cannot find module './types' or its corresponding type declarations.
+src/locales/translations.ts(2,15): error TS2305: Module '"../types"' has no exported member 'Language'.
