@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Link from 'next/link';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const LogoIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -32,9 +33,9 @@ export const Footer: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="flex flex-col gap-4">
-             <a href="#" className="flex items-center">
+             <Link href="/" className="flex items-center">
               <LogoIcon className="h-7 text-foreground" />
-            </a>
+            </Link>
             <p className="text-sm">
               {t('hero_subtitle')}
             </p>
@@ -52,17 +53,17 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="font-semibold text-foreground mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-foreground">{t('home')}</a></li>
-              <li><a href="#" className="hover:text-foreground">{t('cars')}</a></li>
-              <li><a href="#" className="hover:text-foreground">{t('about')}</a></li>
-              <li><a href="#" className="hover:text-foreground">{t('contact')}</a></li>
+              <li><Link href="/" className="hover:text-foreground">{t('home')}</Link></li>
+              <li><Link href="/cars" className="hover:text-foreground">{t('cars')}</Link></li>
+              <li><Link href="/about" className="hover:text-foreground">{t('about')}</Link></li>
+              <li><Link href="/contact" className="hover:text-foreground">{t('contact')}</Link></li>
             </ul>
           </div>
           <div>
             <h3 className="font-semibold text-foreground mb-4">Legal</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-foreground">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-foreground">Privacy Policy</a></li>
+              <li><Link href="/terms" className="hover:text-foreground">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link></li>
             </ul>
           </div>
           <div>

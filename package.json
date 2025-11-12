@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
+    "dev": "next dev",
+    "format": "prettier --write .",
+    "lint": "next lint",
     "start": "next start",
-    "lint": "eslint"
+    "test": "echo \"Tests not yet configured\" && exit 0",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -20,7 +23,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.66.0",
-    "zod": "^4.1.12",
+    "zod": "3.23.8",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
