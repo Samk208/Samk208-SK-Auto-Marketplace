@@ -28,6 +28,9 @@ const UploadCloudIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
 );
 
+// Placeholder for cars without images (TODO: Add actual placeholder to /public)
+const PLACEHOLDER_CAR_IMAGE = 'https://placehold.co/600x400/e2e8f0/64748b?text=No+Image';
+
 export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, showToast }) => {
   const { t } = useTranslation();
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -38,7 +41,7 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
     price: 0,
     currency: 'USD',
     location: { city: '', country: '' },
-    imageUrls: [''],
+    images: [''],
     specifications: {
       engine: '',
       mileage: '',
@@ -72,7 +75,7 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
   //   //   .filter(res => res.data)
   //   //   .map(res => supabase.storage.from('car-images').getPublicUrl(res.data.path).publicURL);
   //   //
-  //   // setCar(prev => ({...prev, imageUrls: [...prev.imageUrls, ...newImageUrls]}));
+  //   // setCar(prev => ({...prev, images: [...prev.images, ...newImageUrls]}));
   // };
 
 
@@ -105,20 +108,20 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
   }
 
   const handleImageUrlChange = (index: number, value: string) => {
-    const newImageUrls = [...car.imageUrls];
+    const newImageUrls = [...car.images];
     newImageUrls[index] = value;
-    setCar(prev => ({ ...prev, imageUrls: newImageUrls }));
+    setCar(prev => ({ ...prev, images: newImageUrls }));
   };
 
   const addImageUrl = () => {
-    if (car.imageUrls.length < 10) {
-      setCar(prev => ({ ...prev, imageUrls: [...prev.imageUrls, ''] }));
+    if (car.images.length < 10) {
+      setCar(prev => ({ ...prev, images: [...prev.images, ''] }));
     }
   };
 
   const removeImageUrl = (index: number) => {
-    if (car.imageUrls.length > 1) {
-        setCar(prev => ({...prev, imageUrls: car.imageUrls.filter((_, i) => i !== index)}));
+    if (car.images.length > 1) {
+        setCar(prev => ({...prev, images: car.images.filter((_, i) => i !== index)}));
     }
   }
 
@@ -297,7 +300,7 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
                     <p className="text-sm">For now, please add images via URL below.</p>
                 </div>
 
-                {car.imageUrls.map((url, index) => (
+                {car.images.map((url, index) => (
                     <div key={index} className="flex items-center gap-2">
                         <Input
                             type="text"
@@ -306,15 +309,23 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
                             onChange={(e) => handleImageUrlChange(index, e.target.value)}
                             required
                         />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeImageUrl(index)} disabled={car.imageUrls.length <= 1}>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeImageUrl(index)} disabled={car.images.length <= 1}>
                             <TrashIcon className="h-4 w-4" />
                         </Button>
                     </div>
                 ))}
-                {car.imageUrls.length < 10 && (
+                {car.images.length < 10 && (
                     <Button type="button" variant="secondary" outline onClick={addImageUrl}>{t('form_add_image')}</Button>
                 )}
-                {car.imageUrls[0] && <img src={car.imageUrls[0]} alt="Main image preview" className="mt-4 rounded-lg w-full max-w-sm object-cover"/>}
+                {/* TODO: Migrate to next/Image with remotePatterns for Supabase CDN and external URLs */}
+                {car.images?.[0] && (
+                    <img
+                        src={car.images[0]}
+                        alt="Main image preview"
+                        className="mt-4 rounded-lg w-full max-w-sm object-cover bg-muted"
+                        onError={(e) => { e.currentTarget.src = PLACEHOLDER_CAR_IMAGE; }}
+                    />
+                )}
             </CardContent>
         </Card>
 

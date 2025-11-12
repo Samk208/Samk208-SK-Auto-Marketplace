@@ -10,7 +10,7 @@ export interface Car {
     city: string;
     country: string;
   };
-  imageUrls: string[];
+  images: string[];
   specifications: {
     engine: string;
     mileage: string;
@@ -22,7 +22,6 @@ export interface Car {
   status: 'Active' | 'Sold' | 'Pending' | 'available' | 'sold' | 'pending';
   dealer_id: string;
   // Optional fields mirrored from Supabase schema to aid migration
-  images?: string[];
   specifications_raw?: any;
   location_city?: string;
   location_country?: string;

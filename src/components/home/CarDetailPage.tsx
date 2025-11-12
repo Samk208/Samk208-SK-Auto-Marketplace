@@ -38,9 +38,12 @@ const StarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
 );
 
+// Placeholder for cars without images (TODO: Add actual placeholder to /public)
+const PLACEHOLDER_CAR_IMAGE = 'https://placehold.co/600x400/e2e8f0/64748b?text=No+Image';
+
 export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, otherListings, sellers, onNavigate, showToast, onOpenContact, currentUser }) => {
     const { t } = useTranslation();
-    const [mainImage, setMainImage] = useState(car.imageUrls[0]);
+    const [mainImage, setMainImage] = useState(car.images?.[0] || PLACEHOLDER_CAR_IMAGE);
     const [destinationPort, setDestinationPort] = useState('');
     const [shippingEstimate, setShippingEstimate] = useState<{ shipping: number; duties: number; total: number } | null>(null);
     
@@ -68,17 +71,24 @@ export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, other
                 {/* Image Gallery & Main Info (Left/Top) */}
                 <div className="lg:col-span-2">
                     <div className="mb-4">
-                        <img src={mainImage} alt={`${car.make} ${car.model}`} className="w-full h-auto object-cover rounded-lg shadow-lg" />
+                        {/* TODO: Migrate to next/Image with remotePatterns for Supabase CDN and external URLs */}
+                        <img
+                            src={mainImage}
+                            alt={mainImage !== PLACEHOLDER_CAR_IMAGE ? `${car.make} ${car.model}` : 'No image available'}
+                            className="w-full h-auto object-cover rounded-lg shadow-lg bg-muted"
+                            onError={(e) => { e.currentTarget.src = PLACEHOLDER_CAR_IMAGE; }}
+                        />
                     </div>
-                    {car.imageUrls.length > 1 && (
+                    {(car.images?.length || 0) > 1 && (
                         <div className="flex gap-2">
-                            {car.imageUrls.map((url, index) => (
-                                <img 
+                            {car.images.map((url, index) => (
+                                <img
                                     key={index}
-                                    src={url}
+                                    src={url || PLACEHOLDER_CAR_IMAGE}
                                     alt={`Thumbnail ${index + 1}`}
-                                    className={`w-24 h-16 object-cover rounded-md cursor-pointer border-2 ${mainImage === url ? 'border-primary' : 'border-transparent'}`}
-                                    onClick={() => setMainImage(url)}
+                                    className={`w-24 h-16 object-cover rounded-md cursor-pointer border-2 bg-muted ${mainImage === url ? 'border-primary' : 'border-transparent'}`}
+                                    onClick={() => setMainImage(url || PLACEHOLDER_CAR_IMAGE)}
+                                    onError={(e) => { e.currentTarget.src = PLACEHOLDER_CAR_IMAGE; }}
                                 />
                             ))}
                         </div>

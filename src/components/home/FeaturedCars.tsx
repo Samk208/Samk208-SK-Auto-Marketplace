@@ -28,16 +28,30 @@ export const FeaturedCars: React.FC<FeaturedCarsProps> = ({ cars = [], sellers =
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {(cars || []).slice(0, 4).map((car) => (
-            <CarCard
-              key={car.id}
-              car={car}
-              sellers={sellers}
-              onNavigate={_onNavigate}
-              showToast={_showToast}
-              currentUser={_currentUser}
-            />
-          ))}
+          {(cars || []).length > 0 ? (
+            (cars || []).slice(0, 4).map((car) => (
+              <CarCard
+                key={car.id}
+                car={car}
+                sellers={sellers}
+                onNavigate={_onNavigate}
+                showToast={_showToast}
+                currentUser={_currentUser}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-16 px-4">
+              <div className="max-w-md mx-auto">
+                <div className="text-6xl mb-4">🚗</div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  {t('no_featured_cars_title')}
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  {t('no_featured_cars_message')}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

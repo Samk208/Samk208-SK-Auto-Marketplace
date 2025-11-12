@@ -3,6 +3,7 @@
 
  import React, { useState, useEffect, useRef } from 'react';
  import Image from 'next/image';
+ import Link from 'next/link';
  import { useRouter } from 'next/navigation';
  import { useTheme } from '@/hooks/useTheme';
  import { useTranslation } from '@/hooks/useTranslation';
@@ -131,9 +132,9 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
-          <a href="#" onClick={(e) => { e.preventDefault(); navigate('home'); }} className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <LogoIcon className="h-7 text-foreground" />
-          </a>
+          </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <NavLink page="home" active={activePage === 'home'} onClick={navigate}>{t('home')}</NavLink>
             <NavLink page="cars" active={activePage === 'cars'} onClick={navigate}>{t('browse_cars')}</NavLink>
@@ -206,12 +207,12 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
                       {user.role === 'buyer' ? (
                         <>
                           <button onClick={() => { navigate('saved-searches'); setIsUserMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent">{t('my_saved_searches')}</button>
-                          <a href="#" className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent">{t('settings')}</a>
+                          <Link href="/settings" className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent">{t('settings')}</Link>
                         </>
                       ) : (
                         <>
                           <button onClick={() => { navigate('seller-dashboard'); setIsUserMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent">{t('dashboard')}</button>
-                          <a href="#" className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent">{t('settings')}</a>
+                          <Link href="/settings" className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent">{t('settings')}</Link>
                         </>
                       )}
                       <button
@@ -230,7 +231,7 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <a href="#" onClick={(e) => { e.preventDefault(); doSignUp('seller'); }} className="hidden lg:inline-flex text-sm font-medium text-foreground/80 hover:text-foreground">{t('sell_your_car')}</a>
+              <Link href="/auth/signup?role=seller" className="hidden lg:inline-flex text-sm font-medium text-foreground/80 hover:text-foreground">{t('sell_your_car')}</Link>
               <Button onClick={doLogin} variant="ghost" className="hidden sm:inline-flex">{t('login')}</Button>
               <Button onClick={() => doSignUp()}> {t('signup')}</Button>
             </div>

@@ -1,5 +1,6 @@
  'use client';
 import React from 'react';
+import Link from 'next/link';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/Button';
 
@@ -32,12 +33,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onFindCar, onStartSell
           {t('hero_subtitle')}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-300">
-          <Button size="lg" onClick={_onFindCar} className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg transform hover:scale-105 transition-transform duration-300">
-            {t('get_started')}
-          </Button>
-          <Button size="lg" variant="secondary" onClick={_onStartSelling}>
-            {t('start_selling')}
-          </Button>
+          <Link href="/cars">
+            <Button size="lg" className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg transform hover:scale-105 transition-transform duration-300">
+              {t('get_started')}
+            </Button>
+          </Link>
+          <Link href="/auth/signup">
+            <Button size="lg" variant="secondary">
+              {t('start_selling')}
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

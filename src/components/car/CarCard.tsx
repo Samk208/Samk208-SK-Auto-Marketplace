@@ -30,6 +30,9 @@ const HeartIcon: React.FC<React.SVGProps<SVGSVGElement> & { isFavorite: boolean 
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
 );
 
+// Placeholder for cars without images (TODO: Add actual placeholder to /public)
+const PLACEHOLDER_CAR_IMAGE = 'https://placehold.co/600x400/e2e8f0/64748b?text=No+Image';
+
 
 export const CarCard: React.FC<CarCardProps> = ({ car, sellers, onNavigate, showToast, currentUser }) => {
   const { t } = useTranslation();
@@ -50,7 +53,13 @@ export const CarCard: React.FC<CarCardProps> = ({ car, sellers, onNavigate, show
   return (
     <Card className="overflow-hidden flex flex-col transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl dark:hover:shadow-purple-500/20">
       <CardHeader className="p-0 relative">
-        <img src={car.imageUrls[0]} alt={`${car.make} ${car.model}`} className="w-full h-48 object-cover" />
+        {/* TODO: Migrate to next/Image with remotePatterns for Supabase CDN and external URLs */}
+        <img
+          src={car.images?.[0] || PLACEHOLDER_CAR_IMAGE}
+          alt={car.images?.[0] ? `${car.make} ${car.model}` : 'No image available'}
+          className="w-full h-48 object-cover bg-muted"
+          onError={(e) => { e.currentTarget.src = PLACEHOLDER_CAR_IMAGE; }}
+        />
          {isVerified && (
             <div className="absolute top-2 left-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                 <CheckCircleIcon className="w-3.5 h-3.5 mr-1" />

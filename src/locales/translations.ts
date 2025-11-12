@@ -167,6 +167,8 @@ export const translations: Record<Language, Translations> = {
     'no_favorites_desc': 'Start browsing and tap the heart icon on any car to save it here.',
     'empty_saved_searches_title': 'You have no saved searches.',
     'empty_saved_searches_desc': 'Save a search to get notified about new listings that match your criteria.',
+    'no_featured_cars_title': 'No Featured Cars Yet',
+    'no_featured_cars_message': 'Check back soon for amazing vehicles from verified sellers across Korea and Africa!',
   },
   ko: {
     'logo': 'SK 오토스피어',
@@ -329,6 +331,8 @@ export const translations: Record<Language, Translations> = {
     'no_favorites_desc': '검색을 시작하고 자동차의 하트 아이콘을 눌러 여기에 저장하세요.',
     'empty_saved_searches_title': '저장된 검색이 없습니다.',
     'empty_saved_searches_desc': '검색을 저장하여 기준에 맞는 새 리스팅에 대한 알림을 받으세요.',
+    'no_featured_cars_title': '아직 추천 자동차가 없습니다',
+    'no_featured_cars_message': '한국과 아프리카 전역의 인증된 판매자로부터 멋진 차량을 곧 만나보세요!',
   },
   fr: {
     'logo': 'SK AutoSphere',
@@ -491,6 +495,8 @@ export const translations: Record<Language, Translations> = {
     'no_favorites_desc': 'Commencez à naviguer et appuyez sur l\'icône en forme de cœur sur n\'importe quelle voiture pour l\'enregistrer ici.',
     'empty_saved_searches_title': 'Vous n\'avez aucune recherche enregistrée.',
     'empty_saved_searches_desc': 'Enregistrez une recherche pour être averti des nouvelles annonces correspondant à vos critères.',
+    'no_featured_cars_title': 'Pas encore de voitures en vedette',
+    'no_featured_cars_message': 'Revenez bientôt pour découvrir d\'incroyables véhicules de vendeurs vérifiés en Corée et en Afrique !',
   },
   sw: {
     'logo': 'SK AutoSphere',
@@ -653,5 +659,7 @@ export const translations: Record<Language, Translations> = {
     'no_favorites_desc': 'Anza kuvinjari na gusa ikoni ya moyo kwenye gari lolote ili kulihifadhi hapa.',
     'empty_saved_searches_title': 'Huna utafutaji uliohifadhiwa.',
     'empty_saved_searches_desc': 'Hifadhi utafutaji ili kupata arifa kuhusu orodha mpya zinazolingana na vigezo vyako.',
+    'no_featured_cars_title': 'Bado Hakuna Magari Maarufu',
+    'no_featured_cars_message': 'Rudi hivi karibuni kwa magari ya ajabu kutoka kwa wauzaji waliothbitishwa katika Korea na Afrika!',
   },
 };

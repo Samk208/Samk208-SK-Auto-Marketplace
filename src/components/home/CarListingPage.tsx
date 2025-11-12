@@ -67,7 +67,7 @@ export const CarListingPage: React.FC<CarListingPageProps> = ({ cars, sellers, o
     price: Number(c.price),
     currency: c.currency,
     location: { city: c.location_city, country: c.location_country },
-    imageUrls: Array.isArray(c.images) ? c.images : [],
+    images: Array.isArray(c.images) ? c.images : [],
     specifications: c.specifications || {},
     description: c.description || '',
     status: c.status,

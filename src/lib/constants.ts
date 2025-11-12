@@ -43,7 +43,7 @@ export const ALL_CARS: Car[] = [
     price: 45000,
     currency: 'USD',
     location: { city: 'Seoul', country: 'KR' },
-    imageUrls: ['https://picsum.photos/seed/hyundai1/800/600', 'https://picsum.photos/seed/hyundai1-a/800/600'],
+    images: ['https://picsum.photos/seed/hyundai1/800/600', 'https://picsum.photos/seed/hyundai1-a/800/600'],
     specifications: {
       engine: '2.5L GDi',
       mileage: '11.7 km/L',
@@ -63,7 +63,7 @@ export const ALL_CARS: Car[] = [
     price: 52000,
     currency: 'USD',
     location: { city: 'Nairobi', country: 'KE' },
-    imageUrls: ['https://picsum.photos/seed/kia1/800/600', 'https://picsum.photos/seed/kia1-a/800/600'],
+    images: ['https://picsum.photos/seed/kia1/800/600', 'https://picsum.photos/seed/kia1-a/800/600'],
     specifications: {
       engine: 'Electric',
       mileage: '475 km range',
@@ -83,7 +83,7 @@ export const ALL_CARS: Car[] = [
     price: 68000,
     currency: 'USD',
     location: { city: 'Lagos', country: 'NG' },
-    imageUrls: ['https://picsum.photos/seed/genesis1/800/600', 'https://picsum.photos/seed/genesis1-a/800/600'],
+    images: ['https://picsum.photos/seed/genesis1/800/600', 'https://picsum.photos/seed/genesis1-a/800/600'],
     specifications: {
       engine: '3.5L Twin-Turbo V6',
       mileage: '9.2 km/L',
@@ -103,7 +103,7 @@ export const ALL_CARS: Car[] = [
     price: 38000,
     currency: 'USD',
     location: { city: 'Dakar', country: 'SN' },
-    imageUrls: ['https://picsum.photos/seed/ssangyong1/800/600'],
+    images: ['https://picsum.photos/seed/ssangyong1/800/600'],
     specifications: {
       engine: '1.5L Turbo GDi',
       mileage: '11.2 km/L',
@@ -123,7 +123,7 @@ export const ALL_CARS: Car[] = [
     price: 55000,
     currency: 'USD',
     location: { city: 'Johannesburg', country: 'ZA' },
-    imageUrls: ['https://picsum.photos/seed/hyundai2/800/600'],
+    images: ['https://picsum.photos/seed/hyundai2/800/600'],
     specifications: {
       engine: '3.8L V6',
       mileage: '10.5 km/L',
@@ -143,7 +143,7 @@ export const ALL_CARS: Car[] = [
     price: 29000,
     currency: 'USD',
     location: { city: 'Accra', country: 'GH' },
-    imageUrls: ['https://picsum.photos/seed/kia2/800/600'],
+    images: ['https://picsum.photos/seed/kia2/800/600'],
     specifications: {
       engine: '1.6L Turbo GDi',
       mileage: '12.8 km/L',
@@ -163,7 +163,7 @@ export const ALL_CARS: Car[] = [
     price: 59000,
     currency: 'USD',
     location: { city: 'Cairo', country: 'EG' },
-    imageUrls: ['https://picsum.photos/seed/genesis2/800/600'],
+    images: ['https://picsum.photos/seed/genesis2/800/600'],
     specifications: {
       engine: '2.5L Turbo GDi',
       mileage: '9.7 km/L',
@@ -183,7 +183,7 @@ export const ALL_CARS: Car[] = [
     price: 48000,
     currency: 'USD',
     location: { city: 'Cape Town', country: 'ZA' },
-    imageUrls: ['https://picsum.photos/seed/hyundai3/800/600'],
+    images: ['https://picsum.photos/seed/hyundai3/800/600'],
     specifications: {
       engine: 'Electric',
       mileage: '488 km range',

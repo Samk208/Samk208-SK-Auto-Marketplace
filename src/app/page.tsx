@@ -1,9 +1,10 @@
 import { FeaturedCars } from '@/components/home/FeaturedCars';
 import { HeroSection } from '@/components/home/HeroSection';
+import type { Car } from '@/types/types';
 
 export default async function HomePage() {
   // Placeholder: fetch featured cars server-side later using Supabase
-  const featuredCars: any[] = [];
+  const featuredCars: Car[] = [];
   return (
     <>
       <HeroSection />

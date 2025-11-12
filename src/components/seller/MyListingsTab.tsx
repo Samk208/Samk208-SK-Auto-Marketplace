@@ -25,6 +25,9 @@ const TrashIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
 );
 
+// Placeholder for cars without images (TODO: Add actual placeholder to /public)
+const PLACEHOLDER_CAR_IMAGE = 'https://placehold.co/600x400/e2e8f0/64748b?text=No+Image';
+
 
 export const MyListingsTab: React.FC<MyListingsTabProps> = ({ listings, onNavigate, onDeleteCar }) => {
     const { t } = useTranslation();
@@ -72,7 +75,13 @@ export const MyListingsTab: React.FC<MyListingsTabProps> = ({ listings, onNaviga
                                 <TableRow key={car.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-4">
-                                            <img src={car.imageUrls[0]} alt={car.model} className="w-16 h-12 object-cover rounded-md" />
+                                            {/* TODO: Migrate to next/Image with remotePatterns for Supabase CDN and external URLs */}
+                                            <img
+                                                src={car.images?.[0] || PLACEHOLDER_CAR_IMAGE}
+                                                alt={car.images?.[0] ? car.model : 'No image available'}
+                                                className="w-16 h-12 object-cover rounded-md bg-muted"
+                                                onError={(e) => { e.currentTarget.src = PLACEHOLDER_CAR_IMAGE; }}
+                                            />
                                             <div>
                                                 <div className="font-medium">{car.make} {car.model}</div>
                                                 <div className="text-sm text-muted-foreground">{car.currency} {car.price.toLocaleString()}</div>
