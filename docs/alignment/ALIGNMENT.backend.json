@@ -1,0 +1,277 @@
+{
+  "report_meta": {
+    "generated_at": "2025-11-12T01:05:00Z",
+    "focus": "Supabase Configuration, Database Schema, Environment Setup",
+    "project": "SK AutoSphere",
+    "verification_method": "Read-only scans, cross-reference with DATABASE-SCHEMA.md"
+  },
+  "environment_variables": {
+    "status": "CRITICAL - Missing",
+    "required_keys": {
+      "GEMINI_API_KEY": {
+        "purpose": "Google Gemini AI for car descriptions",
+        "status": "NOT IN REPO (user exposed in chat)",
+        "risk": "HIGH - Key exposed publicly, should rotate"
+      },
+      "NEXT_PUBLIC_SUPABASE_URL": {
+        "purpose": "Supabase project URL",
+        "status": "NOT IN REPO (user provided)",
+        "value_provided": "https://teyloksuvmmhqixjqoch.supabase.co"
+      },
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
+        "purpose": "Supabase anonymous/public key",
+        "status": "NOT IN REPO (user provided)",
+        "note": "Safe to expose in client, but missing from .env.local"
+      },
+      "UPSTASH_REDIS_URL": {
+        "purpose": "Redis for caching/rate limiting",
+        "status": "NOT IN REPO (user provided)",
+        "value_provided": "https://keen-woodcock-12330.upstash.io"
+      },
+      "UPSTASH_REDIS_TOKEN": {
+        "purpose": "Redis authentication",
+        "status": "NOT IN REPO (user provided)",
+        "risk": "MEDIUM - Exposed in chat"
+      }
+    },
+    "files": {
+      ".env.local": {
+        "exists": false,
+        "required": true,
+        "action": "CREATE with keys provided by user"
+      },
+      ".env.example": {
+        "exists": false,
+        "required": true,
+        "action": "CREATE template for developers"
+      },
+      ".gitignore": {
+        "status": "OK",
+        "protection": "Contains '.env*' pattern"
+      }
+    }
+  },
+  "supabase_client_implementation": {
+    "src/lib/supabase/client.ts": {
+      "status": "CORRECT",
+      "pattern": "createBrowserClient from @supabase/ssr",
+      "package": "@supabase/ssr@0.7.0",
+      "verification": "✓ Aligned with Supabase SSR docs",
+      "code_snippet": "Lines 1-8",
+      "env_dependency": [
+        "process.env.NEXT_PUBLIC_SUPABASE_URL",
+        "process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    "src/lib/supabase/server.ts": {
+      "status": "CORRECT",
+      "pattern": "createServerClient with cookies() from next/headers",
+      "async_cookies": true,
+      "next_version": "Next.js 15+ compatible (await cookies())",
+      "verification": "✓ Correct pattern for server components",
+      "code_snippet": "Lines 1-31",
+      "env_dependency": [
+        "process.env.NEXT_PUBLIC_SUPABASE_URL",
+        "process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    "dependencies": {
+      "@supabase/ssr": "^0.7.0",
+      "@supabase/supabase-js": "^2.79.0",
+      "@supabase/auth-helpers-nextjs": "^0.10.0",
+      "status": "MODERN - Latest stable versions",
+      "note": "@supabase/auth-helpers-nextjs may be legacy (prefer @supabase/ssr)"
+    }
+  },
+  "database_schema_status": {
+    "source": "docs/DATABASE-SCHEMA.md",
+    "last_updated": "2025-01-09",
+    "verification_status": "DOCUMENTED - Not verified in live database",
+    "tables": {
+      "profiles": {
+        "status": "✅ IMPLEMENTED (per docs)",
+        "fields_count": 5,
+        "fields": ["id", "full_name", "avatar_url", "updated_at", "role"],
+        "missing_fields": [
+          "language_preference (P0)",
+          "country (P0)",
+          "phone_number (P1)",
+          "verification_status (P1)",
+          "seller_rating (P2)",
+          "business_name (P2)",
+          "business_registration (P2)"
+        ],
+        "rls_enabled": true,
+        "policies": [
+          "Public profiles viewable by everyone",
+          "Users can update own profile"
+        ]
+      },
+      "cars": {
+        "status": "✅ IMPLEMENTED (per docs)",
+        "fields_count": 14,
+        "key_fields": [
+          "id (UUID)",
+          "make (TEXT)",
+          "model (TEXT)",
+          "year (INTEGER)",
+          "price (NUMERIC)",
+          "currency (TEXT, default USD)",
+          "location_country (TEXT)",
+          "location_city (TEXT)",
+          "images (TEXT[])",
+          "status (TEXT: draft/published/sold/archived)",
+          "specifications (JSONB)",
+          "dealer_id (UUID → profiles.id)",
+          "created_at (TIMESTAMPTZ)",
+          "updated_at (TIMESTAMPTZ)"
+        ],
+        "missing_fields": [
+          "description_en/fr/sw (P0 - multilingual)",
+          "featured (BOOLEAN, P1)",
+          "view_count (INTEGER, P1)",
+          "inquiry_count (INTEGER, P1)",
+          "ai_generated (BOOLEAN, P2)",
+          "shipping_available (BOOLEAN, P2)"
+        ],
+        "rls_enabled": true,
+        "policies": [
+          "Anyone can view published cars",
+          "Dealers can insert/update/delete own cars"
+        ],
+        "indexes": [
+          "idx_cars_dealer_id",
+          "idx_cars_status",
+          "idx_cars_created_at (DESC)",
+          "idx_cars_make_model"
+        ]
+      },
+      "conversations": {
+        "status": "❌ PENDING (Phase 2)",
+        "implementation": "Not created yet"
+      },
+      "messages": {
+        "status": "❌ PENDING (Phase 2)",
+        "implementation": "Not created yet"
+      },
+      "favorites": {
+        "status": "❌ PENDING (Phase 2)",
+        "implementation": "Not created yet"
+      }
+    }
+  },
+  "type_misalignment_issues": {
+    "Car_interface_vs_DB_schema": {
+      "issue": "Field name mismatch between TypeScript and database",
+      "details": {
+        "typescript": {
+          "file": "src/types/types.ts:13",
+          "field": "imageUrls: string[]"
+        },
+        "database": {
+          "file": "docs/DATABASE-SCHEMA.md:141",
+          "field": "images: TEXT[]"
+        },
+        "usage": {
+          "file": "src/components/car/CarCard.tsx:53",
+          "code": "car.imageUrls[0]",
+          "risk": "Runtime error when fetching from Supabase"
+        }
+      },
+      "resolution": "Align TypeScript type to use 'images' or update DB column to 'image_urls'"
+    },
+    "Car_status_enum": {
+      "typescript": {
+        "file": "src/types/types.ts:22",
+        "values": ["Active", "Sold", "Pending", "available", "sold", "pending"]
+      },
+      "database": {
+        "file": "docs/DATABASE-SCHEMA.md:150-155",
+        "values": ["draft", "published", "sold", "archived"]
+      },
+      "issue": "TypeScript allows 'Active'/'Pending', DB uses 'published'/'draft'",
+      "impact": "Status queries may fail or return incorrect results"
+    }
+  },
+  "homepage_featured_cars": {
+    "current_implementation": {
+      "file": "src/app/page.tsx:6",
+      "code": "const featuredCars: any[] = [];",
+      "status": "PLACEHOLDER - Empty array"
+    },
+    "expected_query": {
+      "source": "docs/DATABASE-SCHEMA.md:386-392",
+      "sql": "SELECT c.*, p.full_name FROM cars c JOIN profiles p ON c.dealer_id = p.id WHERE c.status = 'published' AND c.featured = true LIMIT 6",
+      "problem": "featured column doesn't exist yet (marked P1 - Phase 2)"
+    },
+    "temporary_solution": "Query WHERE status = 'published' ORDER BY created_at DESC LIMIT 4",
+    "action_required": [
+      "Add featured BOOLEAN column to cars table",
+      "Update HomePage to fetch real data from Supabase",
+      "Remove any[] type, use Car[] from types.ts"
+    ]
+  },
+  "rls_policy_verification": {
+    "status": "UNVERIFIED",
+    "documented_policies": {
+      "profiles": 2,
+      "cars": 4
+    },
+    "risk": "Policies documented but not confirmed in live Supabase project",
+    "recommendation": "Run Supabase migration or verify in dashboard before production",
+    "potential_issues": [
+      "Draft cars might be publicly visible if policies not applied",
+      "Dealers might be able to edit other sellers' listings",
+      "Unauthorized data access if RLS not enabled"
+    ]
+  },
+  "supabase_cli_commands": {
+    "generate_types": {
+      "command": "supabase gen types typescript --project-id teyloksuvmmhqixjqoch > src/types/database.types.ts",
+      "status": "NEEDS TO RUN",
+      "current_file_status": "Corrupted (3 lines, invalid content)",
+      "note": "Requires SUPABASE_ACCESS_TOKEN env var or supabase login"
+    },
+    "migration_status": {
+      "local_migrations": "Unknown - no supabase/ directory found in grep results",
+      "remote_migrations": "Cannot verify without CLI access"
+    }
+  },
+  "security_concerns": {
+    "api_keys_exposure": {
+      "severity": "HIGH",
+      "issue": "User posted API keys in chat conversation",
+      "exposed_keys": [
+        "GEMINI_API_KEY (should rotate immediately)",
+        "UPSTASH_REDIS_TOKEN (should rotate)",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY (public key, less critical but still bad practice)"
+      ],
+      "recommendation": "Rotate all keys, educate user on .env.local usage"
+    },
+    "env_file_protection": {
+      "status": "OK",
+      "gitignore": "Contains .env* pattern",
+      "verification": "✓ .env files correctly gitignored"
+    }
+  },
+  "recommended_actions": {
+    "immediate": [
+      "1. Create .env.local with user-provided keys (do NOT commit)",
+      "2. Create .env.example template (commit this)",
+      "3. Regenerate database.types.ts from Supabase CLI",
+      "4. Educate user to rotate exposed API keys"
+    ],
+    "short_term": [
+      "5. Align Car type: imageUrls → images",
+      "6. Align Car status enum with DB values",
+      "7. Add featured column to cars table",
+      "8. Verify RLS policies in Supabase dashboard"
+    ],
+    "phase_2": [
+      "9. Create conversations, messages, favorites tables",
+      "10. Add multilingual description fields (description_en, _fr, _sw)",
+      "11. Add analytics fields (view_count, inquiry_count)",
+      "12. Set up Supabase Storage buckets (car-images, avatars)"
+    ]
+  }
+}

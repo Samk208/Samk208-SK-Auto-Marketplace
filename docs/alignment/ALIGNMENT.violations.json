@@ -1,0 +1,494 @@
+{
+  "meta": {
+    "report_title": "SK AutoSphere - Fix Priority Matrix with Agent Assignments",
+    "generated_at": "2025-11-12T01:05:00Z",
+    "total_violations": 27,
+    "agents_involved": 4,
+    "estimated_total_fix_time": "5-7 hours",
+    "verification_status": "All issues verified via code inspection"
+  },
+  "fix_run_order": {
+    "phase_1_critical_blockers": {
+      "priority": "P0",
+      "must_complete_before_build": true,
+      "estimated_time": "2-3 hours",
+      "agents": ["backend-engineer", "frontend-engineer", "security-analyst"],
+      "issues": ["P0-001", "P0-002", "P0-003", "P0-004", "P0-005"]
+    },
+    "phase_2_high_priority": {
+      "priority": "P1",
+      "impact": "UX degradation, type safety",
+      "estimated_time": "2-3 hours",
+      "agents": ["frontend-engineer", "backend-engineer"],
+      "issues": ["P1-001 through P1-012"]
+    },
+    "phase_3_optimization": {
+      "priority": "P2",
+      "impact": "Best practices, performance",
+      "estimated_time": "1 hour",
+      "agents": ["frontend-engineer", "devops-deployment-engineer"],
+      "issues": ["P2-001 through P2-007"]
+    }
+  },
+  "violations_by_agent": {
+    "backend-engineer": {
+      "description": "Handles Supabase setup, database types, environment configuration, schema migrations",
+      "total_issues": 7,
+      "priority_breakdown": {
+        "P0": 3,
+        "P1": 4,
+        "P2": 0
+      },
+      "issues": [
+        {
+          "id": "P0-001",
+          "title": "Regenerate Corrupted database.types.ts",
+          "priority": "P0",
+          "file": "src/types/database.types.ts",
+          "current_state": "3 lines of invalid content, 40+ TS errors",
+          "action": "Run: supabase gen types typescript --project-id teyloksuvmmhqixjqoch > src/types/database.types.ts",
+          "prerequisites": ["SUPABASE_ACCESS_TOKEN env var or supabase login"],
+          "estimated_time": "15 min",
+          "verification": "npx tsc --noEmit should have 0 errors from this file"
+        },
+        {
+          "id": "P0-004",
+          "title": "Create .env.local with Environment Variables",
+          "priority": "P0",
+          "file": ".env.local",
+          "current_state": "File does not exist",
+          "action": "Create file with keys provided by user (GEMINI, SUPABASE, UPSTASH)",
+          "template": "GEMINI_API_KEY=...\nNEXT_PUBLIC_SUPABASE_URL=...\nNEXT_PUBLIC_SUPABASE_ANON_KEY=...\nUPSTASH_REDIS_URL=...\nUPSTASH_REDIS_TOKEN=...",
+          "security_note": "DO NOT COMMIT - File must be gitignored",
+          "estimated_time": "5 min",
+          "verification": "App should connect to Supabase without errors"
+        },
+        {
+          "id": "P0-005",
+          "title": "Create .env.example Template",
+          "priority": "P0",
+          "file": ".env.example",
+          "current_state": "File does not exist",
+          "action": "Create template with placeholder values (your_key_here)",
+          "purpose": "Onboarding documentation for developers",
+          "estimated_time": "5 min",
+          "verification": "File exists and can be committed safely"
+        },
+        {
+          "id": "P1-003",
+          "title": "Align Car Type: imageUrls → images",
+          "priority": "P1",
+          "files": [
+            "src/types/types.ts:13 (change imageUrls to images)",
+            "src/components/car/CarCard.tsx:53 (change car.imageUrls to car.images)",
+            "All components using Car.imageUrls"
+          ],
+          "root_cause": "TypeScript uses imageUrls, DB schema uses images[]",
+          "action": "Rename imageUrls to images throughout codebase",
+          "estimated_time": "20 min",
+          "verification": "Grep 'imageUrls' returns 0 results"
+        },
+        {
+          "id": "P1-009",
+          "title": "Add featured Column to cars Table",
+          "priority": "P1",
+          "file": "Database migration",
+          "current_state": "Column doesn't exist, docs reference it",
+          "action": "ALTER TABLE cars ADD COLUMN featured BOOLEAN DEFAULT false;",
+          "location": "Supabase dashboard or migration file",
+          "estimated_time": "10 min",
+          "verification": "Featured cars query should work on homepage"
+        },
+        {
+          "id": "P1-010",
+          "title": "Verify RLS Policies in Live Database",
+          "priority": "P1",
+          "scope": "profiles and cars tables",
+          "current_state": "Documented but not verified",
+          "action": "Login to Supabase dashboard, verify policies match DATABASE-SCHEMA.md lines 66-210",
+          "risk": "Unauthorized data access if policies not applied",
+          "estimated_time": "15 min",
+          "verification": "Policies visible in Supabase dashboard, test with different user roles"
+        },
+        {
+          "id": "P1-011",
+          "title": "Downgrade Zod to v3.23.x",
+          "priority": "P1",
+          "file": "package.json:23",
+          "current_state": "zod@^4.1.12 (beta/experimental)",
+          "action": "npm install --save-exact zod@3.23.8",
+          "reason": "@hookform/resolvers expects Zod v3",
+          "estimated_time": "5 min",
+          "verification": "package.json shows zod@3.23.8"
+        }
+      ]
+    },
+    "frontend-engineer": {
+      "description": "Handles UI components, routing, image optimization, TypeScript types in components",
+      "total_issues": 13,
+      "priority_breakdown": {
+        "P0": 2,
+        "P1": 8,
+        "P2": 3
+      },
+      "issues": [
+        {
+          "id": "P0-002",
+          "title": "Replace href='#' with next/link Component",
+          "priority": "P0",
+          "files": [
+            "src/components/layout/Header.tsx (lines 134, 209, 214, 233)",
+            "src/components/layout/Footer.tsx (lines 35, 55-58, 64-66, 71-79)"
+          ],
+          "current_state": "All navigation uses href='#' with onClick preventDefault",
+          "action": "Import Link from next/link, replace <a href='#'> with <Link href='...'>",
+          "example": "<Link href='/cars'>Browse Cars</Link>",
+          "estimated_time": "45 min",
+          "verification": "Grep 'href=[\"']#' returns 0 results, navigation works without page reload"
+        },
+        {
+          "id": "P0-003",
+          "title": "Convert HeroSection to use next/Image",
+          "priority": "P0",
+          "file": "src/components/home/HeroSection.tsx:19-23",
+          "current_code": "<img src='https://picsum.photos/...' alt='Modern car' className='...' />",
+          "action": "Replace with <Image src='...' alt='...' fill priority className='...' />",
+          "estimated_time": "15 min",
+          "verification": "HeroSection uses next/Image, image loads optimized"
+        },
+        {
+          "id": "P1-001",
+          "title": "Add Missing Scripts to package.json",
+          "priority": "P1",
+          "file": "package.json:5-10",
+          "current_state": "Only dev, build, start, lint scripts",
+          "action": "Add: type-check, format, test, test:e2e, db:generate-types",
+          "scripts_to_add": {
+            "type-check": "tsc --noEmit",
+            "format": "prettier --write .",
+            "lint": "next lint",
+            "test": "vitest",
+            "test:e2e": "playwright test"
+          },
+          "estimated_time": "10 min",
+          "verification": "pnpm type-check, pnpm format commands work"
+        },
+        {
+          "id": "P1-002",
+          "title": "Fix Incomplete ESLint Script",
+          "priority": "P1",
+          "file": "package.json:9",
+          "current": "\"lint\": \"eslint\"",
+          "action": "Change to \"lint\": \"next lint\"",
+          "estimated_time": "2 min",
+          "verification": "pnpm lint runs without errors"
+        },
+        {
+          "id": "P1-004",
+          "title": "Add Null Check to CarCard Image Access",
+          "priority": "P1",
+          "file": "src/components/car/CarCard.tsx:53",
+          "current_code": "<img src={car.images[0]} ... />",
+          "issue": "No safety check for empty array",
+          "action": "Change to: src={car.images?.[0] || '/placeholder-car.jpg'}",
+          "estimated_time": "5 min",
+          "verification": "Component renders with empty images array"
+        },
+        {
+          "id": "P1-005",
+          "title": "Fix Loose Type in HomePage",
+          "priority": "P1",
+          "file": "src/app/page.tsx:6",
+          "current_code": "const featuredCars: any[] = [];",
+          "action": "Change to: const featuredCars: Car[] = [];",
+          "estimated_time": "2 min",
+          "verification": "TypeScript autocomplete works for featuredCars array"
+        },
+        {
+          "id": "P1-006",
+          "title": "Fix Header Navigation Buttons",
+          "priority": "P1",
+          "file": "src/components/layout/Header.tsx",
+          "lines": [134, 209, 214, 233],
+          "action": "Convert buttons/anchors to next/link Links",
+          "estimated_time": "20 min (part of P0-002)",
+          "verification": "Header navigation uses client-side routing"
+        },
+        {
+          "id": "P1-007",
+          "title": "Fix Footer Navigation Links",
+          "priority": "P1",
+          "file": "src/components/layout/Footer.tsx",
+          "lines": [35, 55, 56, 57, 58],
+          "action": "Convert footer links to next/link",
+          "estimated_time": "15 min (part of P0-002)",
+          "verification": "Footer links functional, no href='#'"
+        },
+        {
+          "id": "P1-008",
+          "title": "Convert All <img> Tags to next/Image",
+          "priority": "P1",
+          "files": [
+            "src/components/car/CarCard.tsx",
+            "src/components/home/CarDetailPage.tsx",
+            "src/components/home/ChatModal.tsx",
+            "src/components/seller/ListCarPage.tsx",
+            "src/components/seller/MyListingsTab.tsx",
+            "src/components/seller/ProfileTab.tsx"
+          ],
+          "action": "Replace <img> with <Image> from next/image, add width/height or fill prop",
+          "estimated_time": "30 min",
+          "verification": "Grep '<img src=' returns only external SVGs or icons"
+        },
+        {
+          "id": "P1-012",
+          "title": "Update HomePage to Fetch Real Featured Cars",
+          "priority": "P1",
+          "file": "src/app/page.tsx",
+          "current_state": "Empty array placeholder",
+          "action": "Query Supabase: .from('cars').select('*, dealer:profiles(*)').eq('status', 'published').limit(4)",
+          "dependencies": ["P0-001 (types)", "P0-004 (env)", "P1-009 (featured column optional)"],
+          "estimated_time": "20 min",
+          "verification": "Homepage displays actual cars from database"
+        },
+        {
+          "id": "P2-001",
+          "title": "Simplify Routing Abstraction",
+          "priority": "P2",
+          "file": "src/components/layout/Header.tsx:83-104",
+          "current_state": "Custom pageToPath() function + onNavigate prop",
+          "action": "Consider replacing with direct next/link usage",
+          "trade_off": "Current pattern adds flexibility but complexity",
+          "estimated_time": "30 min (optional refactor)",
+          "verification": "Routing still works, code is cleaner"
+        },
+        {
+          "id": "P2-006",
+          "title": "Document Good Component Patterns",
+          "priority": "P2",
+          "scope": "No code changes, just note for future reference",
+          "examples": [
+            "CarCard.tsx - Well-typed props",
+            "FeaturedCars.tsx - Good default prop handling",
+            "Header.tsx - Clean SVG components"
+          ],
+          "action": "None - these are GOOD examples to follow",
+          "estimated_time": "0 min"
+        }
+      ]
+    },
+    "security-analyst": {
+      "description": "Reviews environment variable handling, API key exposure, .gitignore protection (read-only analysis)",
+      "total_issues": 2,
+      "priority_breakdown": {
+        "P0": 1,
+        "P1": 0,
+        "P2": 1
+      },
+      "issues": [
+        {
+          "id": "SEC-001",
+          "title": "User Exposed API Keys in Chat",
+          "priority": "P0",
+          "severity": "HIGH - Immediate Action Required",
+          "exposed_keys": [
+            "GEMINI_API_KEY",
+            "UPSTASH_REDIS_TOKEN",
+            "NEXT_PUBLIC_SUPABASE_ANON_KEY (less critical but still bad practice)"
+          ],
+          "action": "Educate user to ROTATE all keys immediately",
+          "steps": [
+            "1. Go to Google Cloud Console → API Keys → Delete old key → Generate new",
+            "2. Go to Upstash Dashboard → Rotate Redis token",
+            "3. Remind user: NEVER share keys in chat, commits, or screenshots"
+          ],
+          "estimated_time": "User action - 15 min",
+          "verification": "User confirms keys rotated, .env.local created properly"
+        },
+        {
+          "id": "SEC-002",
+          "title": "Verify .gitignore Protection",
+          "priority": "P2",
+          "file": ".gitignore",
+          "current_state": "Contains .env* pattern ✅",
+          "action": "Read-only check - no changes needed",
+          "status": "OK",
+          "estimated_time": "0 min (already verified)",
+          "verification": "✓ .env files correctly protected"
+        }
+      ]
+    },
+    "devops-deployment-engineer": {
+      "description": "Package configuration, build scripts, TypeScript setup (infrastructure-level fixes)",
+      "total_issues": 5,
+      "priority_breakdown": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 5
+      },
+      "issues": [
+        {
+          "id": "P2-003",
+          "title": "Verify Supabase Client Patterns",
+          "priority": "P2",
+          "files": [
+            "src/lib/supabase/client.ts",
+            "src/lib/supabase/server.ts"
+          ],
+          "status": "✅ ALREADY CORRECT",
+          "action": "None - patterns align with Supabase SSR docs",
+          "estimated_time": "0 min (verification only)"
+        },
+        {
+          "id": "P2-004",
+          "title": "Review Dependencies - Modern Versions",
+          "priority": "P2",
+          "file": "package.json:11-24",
+          "status": "✅ OK - Next.js 16.0.1, React 19.2.0, Supabase latest",
+          "action": "None - all dependencies modern and stable",
+          "estimated_time": "0 min (no changes needed)"
+        },
+        {
+          "id": "P2-005",
+          "title": "Validate Translation System",
+          "priority": "P2",
+          "scope": "useTranslation hook implementation",
+          "status": "✅ OK - No issues detected in usage patterns",
+          "action": "None - implementation functional",
+          "estimated_time": "0 min"
+        },
+        {
+          "id": "P2-007",
+          "title": "Confirm TypeScript Config Alignment",
+          "priority": "P2",
+          "file": "tsconfig.json",
+          "status": "✅ CORRECT - strict mode, proper paths, Next.js plugin",
+          "action": "None - config follows Next.js 14+ best practices",
+          "estimated_time": "0 min"
+        },
+        {
+          "id": "BUILD-001",
+          "title": "Add CI/CD Type-Check Step",
+          "priority": "P2",
+          "scope": ".github/workflows/*.yml (if exists)",
+          "action": "Ensure GitHub Actions runs 'pnpm type-check' on PRs",
+          "dependencies": ["P1-001 (type-check script must exist)"],
+          "estimated_time": "10 min",
+          "verification": "CI fails on TypeScript errors"
+        }
+      ]
+    }
+  },
+  "fix_priority_matrix": {
+    "highest_roi_fixes": [
+      {
+        "rank": 1,
+        "issue": "P0-001: Regenerate database.types.ts",
+        "owner": "backend-engineer",
+        "reason": "Blocks build, 40+ errors, single command fix",
+        "time": "15 min",
+        "impact": "Unblocks TypeScript compilation"
+      },
+      {
+        "rank": 2,
+        "issue": "P0-004/005: Create .env files",
+        "owner": "backend-engineer",
+        "reason": "Blocks Supabase connection, quick fix",
+        "time": "10 min",
+        "impact": "App can connect to database"
+      },
+      {
+        "rank": 3,
+        "issue": "P0-002: Replace href='#' with next/link",
+        "owner": "frontend-engineer",
+        "reason": "Major UX issue, affects all navigation",
+        "time": "45 min",
+        "impact": "Client-side routing, better UX"
+      },
+      {
+        "rank": 4,
+        "issue": "P0-003: Convert HeroSection to next/Image",
+        "owner": "frontend-engineer",
+        "reason": "Homepage hero optimization",
+        "time": "15 min",
+        "impact": "Faster LCP, better SEO"
+      },
+      {
+        "rank": 5,
+        "issue": "P1-003: Align Car.imageUrls → images",
+        "owner": "backend-engineer",
+        "reason": "Prevents runtime errors with real data",
+        "time": "20 min",
+        "impact": "Type safety for car listings"
+      }
+    ],
+    "parallel_execution_groups": {
+      "group_1_critical": {
+        "can_run_parallel": false,
+        "reason": "P0-001 must complete before P0-004 (types needed for env setup)",
+        "sequence": [
+          "P0-001 (backend-engineer): Regenerate types",
+          "P0-004/005 (backend-engineer): Create env files"
+        ]
+      },
+      "group_2_frontend": {
+        "can_run_parallel": true,
+        "after": "group_1_critical",
+        "agents": {
+          "frontend-engineer": ["P0-002", "P0-003", "P1-001", "P1-002"],
+          "backend-engineer": ["P1-003", "P1-009", "P1-010"]
+        }
+      },
+      "group_3_polish": {
+        "can_run_parallel": true,
+        "after": "group_2_frontend",
+        "agents": {
+          "frontend-engineer": ["P1-004", "P1-005", "P1-008", "P1-012"],
+          "backend-engineer": ["P1-011"]
+        }
+      },
+      "group_4_optional": {
+        "can_run_parallel": true,
+        "optional": true,
+        "agents": {
+          "frontend-engineer": ["P2-001"],
+          "devops-deployment-engineer": ["BUILD-001"]
+        }
+      }
+    }
+  },
+  "success_criteria": {
+    "build_success": {
+      "command": "pnpm build",
+      "expected": "Exit code 0, no TypeScript errors",
+      "blockers_resolved": ["P0-001", "P0-004", "P0-005"]
+    },
+    "type_safety": {
+      "command": "pnpm type-check",
+      "expected": "0 errors",
+      "issues_resolved": ["P0-001", "P1-003", "P1-005"]
+    },
+    "navigation_ux": {
+      "test": "Click header links, observe no page reload",
+      "expected": "Client-side routing works",
+      "issues_resolved": ["P0-002", "P1-006", "P1-007"]
+    },
+    "image_optimization": {
+      "test": "Check Network tab, verify WebP images",
+      "expected": "Images served as WebP, lazy loaded",
+      "issues_resolved": ["P0-003", "P1-008"]
+    },
+    "database_connection": {
+      "test": "Load homepage, check featured cars",
+      "expected": "Cars load from Supabase",
+      "issues_resolved": ["P0-004", "P1-009", "P1-012"]
+    }
+  },
+  "estimated_timeline": {
+    "phase_1_critical": "1.5 hours",
+    "phase_2_high_priority": "2 hours",
+    "phase_3_optimization": "1 hour",
+    "total": "4.5-5 hours (with parallel execution)",
+    "sequential_total": "6-7 hours (if done sequentially)"
+  }
+}
