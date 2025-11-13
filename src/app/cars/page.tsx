@@ -50,30 +50,21 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
   const from = (page - 1) * itemsPerPage;
   const to = from + itemsPerPage - 1;
 
-  // Build query
-  let query = supabase
+  // Build query for cars only (no join)
+  let carsQuery = supabase
     .from('cars')
-    .select(
-      `
-      *,
-      profiles!dealer_id (
-        full_name,
-        avatar_url
-      )
-    `,
-      { count: 'exact' }
-    )
+    .select('*', { count: 'exact' })
     .eq('status', 'published')
     .order('created_at', { ascending: false })
     .range(from, to);
 
   // Add make filter if provided
   if (make) {
-    query = query.ilike('make', `%${make}%`);
+    carsQuery = carsQuery.ilike('make', `%${make}%`);
   }
 
   // Execute query
-  const { data: cars, error, count } = await query;
+  const { data: carsData, error, count } = await carsQuery;
 
   if (error) {
     console.error('Error fetching cars:', error);
@@ -83,6 +74,27 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
         <p className="text-red-500">Error loading cars. Please try again later.</p>
       </div>
     );
+  }
+
+  // Fetch dealer profiles separately
+  let cars: CarWithDealer[] = [];
+  if (carsData && carsData.length > 0) {
+    const dealerIds = [...new Set(carsData.map(car => car.dealer_id))];
+
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .in('id', dealerIds);
+
+    const profilesMap = new Map(
+      (profilesData || []).map(profile => [profile.id, profile])
+    );
+
+    // Merge profiles into cars data
+    cars = carsData.map(car => ({
+      ...car,
+      profiles: profilesMap.get(car.dealer_id) || null
+    })) as CarWithDealer[];
   }
 
   const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
