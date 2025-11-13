@@ -16,7 +16,7 @@ interface SelectContextType {
   onValueChange: (value: string) => void;
   open: boolean;
   setOpen: (open: boolean) => void;
-  triggerRef: React.RefObject<HTMLButtonElement>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
   displayValue: React.ReactNode;
   setDisplayValue: (node: React.ReactNode) => void;
 }

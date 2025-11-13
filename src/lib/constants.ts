@@ -1,5 +1,5 @@
 
-import type { Car, User } from './types';
+import type { Car, User } from '@/types/types';
 
 export const MOCK_SELLERS: User[] = [
   {
@@ -36,7 +36,7 @@ export const MOCK_SELLERS: User[] = [
 
 export const ALL_CARS: Car[] = [
   {
-    id: 1,
+    id: '1',
     make: 'Hyundai',
     model: 'Grandeur',
     year: 2023,
@@ -56,7 +56,7 @@ export const ALL_CARS: Car[] = [
     dealer_id: 'seller-123',
   },
   {
-    id: 2,
+    id: '2',
     make: 'Kia',
     model: 'EV6',
     year: 2024,
@@ -76,7 +76,7 @@ export const ALL_CARS: Car[] = [
     dealer_id: 'seller-456',
   },
   {
-    id: 3,
+    id: '3',
     make: 'Genesis',
     model: 'G80',
     year: 2023,
@@ -96,7 +96,7 @@ export const ALL_CARS: Car[] = [
     dealer_id: 'seller-456',
   },
   {
-    id: 4,
+    id: '4',
     make: 'SsangYong',
     model: 'Torres',
     year: 2023,
@@ -116,7 +116,7 @@ export const ALL_CARS: Car[] = [
     dealer_id: 'seller-789',
   },
   {
-    id: 5,
+    id: '5',
     make: 'Hyundai',
     model: 'Palisade',
     year: 2024,
@@ -136,7 +136,7 @@ export const ALL_CARS: Car[] = [
     dealer_id: 'seller-123',
   },
   {
-    id: 6,
+    id: '6',
     make: 'Kia',
     model: 'Seltos',
     year: 2023,
@@ -156,7 +156,7 @@ export const ALL_CARS: Car[] = [
     dealer_id: 'seller-456',
   },
   {
-    id: 7,
+    id: '7',
     make: 'Genesis',
     model: 'GV70',
     year: 2024,
@@ -176,7 +176,7 @@ export const ALL_CARS: Car[] = [
     dealer_id: 'seller-123',
   },
   {
-    id: 8,
+    id: '8',
     make: 'Hyundai',
     model: 'Ioniq 5',
     year: 2023,

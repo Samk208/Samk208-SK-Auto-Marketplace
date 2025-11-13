@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from '../../hooks/useTranslation';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 
 const ListIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (

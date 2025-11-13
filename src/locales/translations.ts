@@ -1,5 +1,5 @@
 
-import type { Language } from '../types';
+import type { Language } from '@/types/types';
 
 type Translations = {
   [key: string]: string;

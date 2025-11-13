@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import type { Car, Page, User, ToastMessage } from '../types';
-import { useTranslation } from '../hooks/useTranslation';
-import { Button } from './ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
-import { CarCard } from './CarCard';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
-import { Label } from './ui/Label';
+import type { Car, Page, User, ToastMessage } from '@/types/types';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '../ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { CarCard } from '../car/CarCard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/Select';
+import { Label } from '../ui/Label';
 
 
 interface CarDetailPageProps {

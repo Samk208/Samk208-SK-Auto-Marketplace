@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from '../../hooks/useTranslation';
-import type { Car, ToastMessage } from '../../types';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { Car, ToastMessage } from '@/types/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -127,7 +127,7 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ ...car, id: carToEdit?.id || 0, dealer_id: carToEdit?.dealer_id || '' });
+    onSubmit({ ...car, id: carToEdit?.id || crypto.randomUUID(), dealer_id: carToEdit?.dealer_id || '' });
   };
   
   const AiWriterModal = () => (

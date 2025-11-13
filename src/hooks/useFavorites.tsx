@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 const FAVORITES_KEY = 'sk-autosphere-favorites';
 
 export const useFavorites = () => {
-  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     try {
@@ -17,7 +17,7 @@ export const useFavorites = () => {
     }
   }, []);
 
-  const toggleFavorite = useCallback((carId: number) => {
+  const toggleFavorite = useCallback((carId: string) => {
     setFavoriteIds(prevIds => {
       const newIds = new Set(prevIds);
       if (newIds.has(carId)) {
@@ -34,7 +34,7 @@ export const useFavorites = () => {
     });
   }, []);
 
-  const isFavorite = useCallback((carId: number) => {
+  const isFavorite = useCallback((carId: string) => {
     return favoriteIds.has(carId);
   }, [favoriteIds]);
 

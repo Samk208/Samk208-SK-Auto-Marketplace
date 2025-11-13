@@ -1,7 +1,7 @@
 
 import React from 'react';
-import type { User, Page, Car, ToastMessage } from '../../types';
-import { useTranslation } from '../../hooks/useTranslation';
+import type { User, Page, Car, ToastMessage } from '@/types/types';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
 import { MyListingsTab } from './MyListingsTab';
 import { AnalyticsTab } from './AnalyticsTab';
@@ -12,7 +12,7 @@ interface SellerDashboardProps {
   onUpdateUser: (user: User) => void;
   onNavigate: (page: Page, context?: any) => void;
   cars: Car[];
-  onDeleteCar: (carId: number) => void;
+  onDeleteCar: (carId: string) => void;
   showToast: (message: string, type?: ToastMessage['type']) => void;
 }
 

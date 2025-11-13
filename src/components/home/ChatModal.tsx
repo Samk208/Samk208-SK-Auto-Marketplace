@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/Dialog';
-import { Button } from './ui/Button';
-import { Input } from './ui/Input';
-import { useTranslation } from '../hooks/useTranslation';
-import type { Car, User, ChatMessage } from '../types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { Car, User, ChatMessage } from '@/types/types';
 
 interface ChatModalProps {
   isOpen: boolean;

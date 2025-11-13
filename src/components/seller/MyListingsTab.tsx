@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
-import { useTranslation } from '../../hooks/useTranslation';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
 import { Button } from '../ui/Button';
-import type { Car, Page, ToastMessage } from '../../types';
+import type { Car, Page, ToastMessage } from '@/types/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/AlertDialog';
 import { Badge } from '../ui/Badge';
 
 interface MyListingsTabProps {
     listings: Car[];
     onNavigate: (page: Page, context?: any) => void;
-    onDeleteCar: (carId: number) => void;
+    onDeleteCar: (carId: string) => void;
     showToast: (message: string, type?: ToastMessage['type']) => void;
 }
 

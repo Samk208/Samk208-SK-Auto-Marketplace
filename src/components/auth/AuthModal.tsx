@@ -4,9 +4,9 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
-import { useTranslation } from '../../hooks/useTranslation';
-import type { User } from '../../types';
-import { supabase } from '../../lib/supabase';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { User } from '@/types/types';
+import { supabase } from '@/lib/supabase/client';
 
 interface AuthModalProps {
   isOpen: boolean;
