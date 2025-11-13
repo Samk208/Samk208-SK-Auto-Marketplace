@@ -30,7 +30,7 @@ async function getFeaturedCars(): Promise<{ cars: Car[]; sellers: User[] }> {
     .select(
       `
         *,
-        dealer:profiles!cars_dealer_id_fkey (
+        profiles!dealer_id (
           id,
           full_name,
           avatar_url,
@@ -82,7 +82,7 @@ async function getFeaturedCars(): Promise<{ cars: Car[]; sellers: User[] }> {
   });
 
   const sellers: User[] = data
-    .map((car) => car.dealer)
+    .map((car) => car.profiles)
     .filter(Boolean)
     .map((dealer) => ({
       id: dealer!.id,
