@@ -25,32 +25,37 @@ async function getFeaturedCars(): Promise<{ cars: Car[]; sellers: User[] }> {
     }
   );
 
-  const { data, error } = await supabase
+  // Fetch featured cars
+  const { data: carsData, error: carsError } = await supabase
     .from('cars')
-    .select(
-      `
-        *,
-        profiles!dealer_id (
-          id,
-          full_name,
-          avatar_url,
-          role,
-          phone_number,
-          verification_status
-        )
-      `
-    )
+    .select('*')
     .eq('status', 'published')
     .eq('featured', true)
     .order('created_at', { ascending: false })
     .limit(4);
 
-  if (error || !data) {
-    console.error('[home] featured cars fetch failed', error);
+  if (carsError || !carsData || carsData.length === 0) {
+    if (carsError) {
+      console.error('[home] featured cars fetch failed', carsError);
+    }
     return { cars: [], sellers: [] };
   }
 
-  const cars: Car[] = data.map((car) => {
+  // Get unique dealer IDs
+  const dealerIds = [...new Set(carsData.map(car => car.dealer_id))];
+
+  // Fetch dealer profiles separately
+  const { data: profilesData } = await supabase
+    .from('profiles')
+    .select('id, full_name, avatar_url, role, phone_number, verification_status')
+    .in('id', dealerIds);
+
+  // Create a map of profiles for easy lookup
+  const profilesMap = new Map(
+    (profilesData || []).map(profile => [profile.id, profile])
+  );
+
+  const cars: Car[] = carsData.map((car) => {
     const descriptionCandidates = [
       car.description,
       (car as { description_en?: string | null }).description_en,
@@ -81,19 +86,16 @@ async function getFeaturedCars(): Promise<{ cars: Car[]; sellers: User[] }> {
     };
   });
 
-  const sellers: User[] = data
-    .map((car) => car.profiles)
-    .filter(Boolean)
-    .map((dealer) => ({
-      id: dealer!.id,
-      email: `${dealer!.id}@placeholder.local`,
-      fullName: dealer!.full_name ?? 'Unknown Seller',
-      avatarUrl: dealer!.avatar_url ?? undefined,
-      role: 'seller',
-      phone: dealer!.phone_number ?? undefined,
-      location: undefined,
-      businessDescription: undefined,
-    }));
+  const sellers: User[] = Array.from(profilesMap.values()).map((profile) => ({
+    id: profile.id,
+    email: `${profile.id}@placeholder.local`,
+    fullName: profile.full_name ?? 'Unknown Seller',
+    avatarUrl: profile.avatar_url ?? undefined,
+    role: 'seller',
+    phone: profile.phone_number ?? undefined,
+    location: undefined,
+    businessDescription: undefined,
+  }));
 
   return { cars, sellers };
 }
