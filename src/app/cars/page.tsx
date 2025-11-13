@@ -1,6 +1,7 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import Link from 'next/link';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { PAGINATION } from '@/lib/config/pagination';
+import { logger } from '@/lib/utils/logger';
 import CarsGrid from './CarsGrid';
 import type { Database } from '@/types/database.types';
 
@@ -23,30 +24,10 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
   const make = params.make;
 
   // Create Supabase server client
-  const cookieStore = await cookies();
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // Handle cookie setting errors (can happen in Server Components)
-          }
-        },
-      },
-    }
-  );
+  const supabase = await createServerSupabaseClient();
 
   // Calculate pagination
-  const itemsPerPage = 12;
+  const itemsPerPage = PAGINATION.CARS_PER_PAGE;
   const from = (page - 1) * itemsPerPage;
   const to = from + itemsPerPage - 1;
 
@@ -67,7 +48,7 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
   const { data: carsData, error, count } = await carsQuery;
 
   if (error) {
-    console.error('Error fetching cars:', error);
+    logger.error('cars-page', 'cars fetch failed', error);
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-semibold mb-4">Browse Cars</h1>

@@ -1,29 +1,13 @@
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
 import { FeaturedCars } from '@/components/home/FeaturedCars';
 import { HeroSection } from '@/components/home/HeroSection';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { PAGINATION } from '@/lib/config/pagination';
+import { logger } from '@/lib/utils/logger';
 import type { Database } from '@/types/database.types';
 import type { Car, User } from '@/types/types';
 
 async function getFeaturedCars(): Promise<{ cars: Car[]; sellers: User[] }> {
-  const cookieStore = await cookies();
-
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set({ name, value, ...options });
-          });
-        },
-      },
-    }
-  );
+  const supabase = await createServerSupabaseClient();
 
   // Fetch featured cars
   const { data: carsData, error: carsError } = await supabase
@@ -32,11 +16,11 @@ async function getFeaturedCars(): Promise<{ cars: Car[]; sellers: User[] }> {
     .eq('status', 'published')
     .eq('featured', true)
     .order('created_at', { ascending: false })
-    .limit(4);
+    .limit(PAGINATION.FEATURED_CARS_LIMIT);
 
   if (carsError || !carsData || carsData.length === 0) {
     if (carsError) {
-      console.error('[home] featured cars fetch failed', carsError);
+      logger.error('home', 'featured cars fetch failed', carsError);
     }
     return { cars: [], sellers: [] };
   }
