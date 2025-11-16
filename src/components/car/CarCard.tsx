@@ -92,7 +92,7 @@ export const CarCard: React.FC<CarCardProps> = ({ car, sellers, onNavigate, show
             </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground text-right flex-shrink-0">
                 <MapPinIcon className="w-4 h-4" />
-                <span>{car.location.city}, {car.location.country}</span>
+                <span>{car.location?.city ?? 'Unknown'}, {car.location?.country ?? 'Unknown'}</span>
             </div>
         </div>
          {seller && (

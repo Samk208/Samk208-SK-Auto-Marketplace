@@ -40,8 +40,16 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
     year: new Date().getFullYear(),
     price: 0,
     currency: 'USD',
+    description: '',
+    description_en: null,
+    description_fr: null,
+    description_sw: null,
+    location_country: '',
+    location_city: '',
     location: { city: '', country: '' },
     images: [''],
+    status: 'available',
+    featured: false,
     specifications: {
       engine: '',
       mileage: '',
@@ -49,8 +57,12 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
       fuelType: 'Petrol',
       bodyType: 'Sedan',
     },
-    description: '',
-    status: 'Active',
+    view_count: 0,
+    inquiry_count: 0,
+    ai_generated: false,
+    shipping_available: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
 
   useEffect(() => {
@@ -88,7 +100,7 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
     const { name, value } = e.target;
     setCar(prev => ({
       ...prev,
-      specifications: { ...prev.specifications, [name]: value }
+      specifications: { ...(prev.specifications || {}), [name]: value }
     }));
   };
 
@@ -98,30 +110,37 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
    const handleSpecSelectChange = (name: string, value: string) => {
     setCar(prev => ({
       ...prev,
-      specifications: { ...prev.specifications, [name]: value }
+      specifications: { ...(prev.specifications || {}), [name]: value }
     }));
   };
 
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
-      setCar(prev => ({ ...prev, location: { ...prev.location, [name]: value } }));
+      setCar(prev => ({
+        ...prev,
+        location: { ...(prev.location || { city: '', country: '' }), [name]: value },
+        [`location_${name}`]: value // Also update flat location fields
+      }));
   }
 
   const handleImageUrlChange = (index: number, value: string) => {
-    const newImageUrls = [...car.images];
+    const safeImages = car.images && Array.isArray(car.images) ? car.images : [''];
+    const newImageUrls = [...safeImages];
     newImageUrls[index] = value;
     setCar(prev => ({ ...prev, images: newImageUrls }));
   };
 
   const addImageUrl = () => {
-    if (car.images.length < 10) {
-      setCar(prev => ({ ...prev, images: [...prev.images, ''] }));
+    const safeImages = car.images && Array.isArray(car.images) ? car.images : [''];
+    if (safeImages.length < 10) {
+      setCar(prev => ({ ...prev, images: [...safeImages, ''] }));
     }
   };
 
   const removeImageUrl = (index: number) => {
-    if (car.images.length > 1) {
-        setCar(prev => ({...prev, images: car.images.filter((_, i) => i !== index)}));
+    const safeImages = car.images && Array.isArray(car.images) ? car.images : [''];
+    if (safeImages.length > 1) {
+        setCar(prev => ({...prev, images: safeImages.filter((_, i) => i !== index)}));
     }
   }
 
@@ -209,16 +228,16 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
                           {t('generate_with_ai')}
                       </Button>
                     </div>
-                    <Textarea id="description" name="description" value={car.description} onChange={handleChange} rows={5} required />
+                    <Textarea id="description" name="description" value={car.description ?? ''} onChange={handleChange} rows={5} required />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                      <div className="space-y-2">
                         <Label htmlFor="country">{t('form_location_country')}</Label>
-                        <Input id="country" name="country" value={car.location.country} onChange={handleLocationChange} placeholder="e.g., KE" required />
+                        <Input id="country" name="country" value={car.location?.country ?? ''} onChange={handleLocationChange} placeholder="e.g., KE" required />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="city">{t('form_location_city')}</Label>
-                        <Input id="city" name="city" value={car.location.city} onChange={handleLocationChange} placeholder="e.g., Nairobi" required />
+                        <Input id="city" name="city" value={car.location?.city ?? ''} onChange={handleLocationChange} placeholder="e.g., Nairobi" required />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="status">{t('form_status')}</Label>
@@ -243,11 +262,11 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
             <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  <div className="space-y-2">
                     <Label htmlFor="engine">{t('form_engine')}</Label>
-                    <Input id="engine" name="engine" value={car.specifications.engine} onChange={handleSpecChange} required />
+                    <Input id="engine" name="engine" value={car.specifications?.engine ?? ''} onChange={handleSpecChange} required />
                  </div>
                  <div className="space-y-2">
                     <Label htmlFor="transmission">{t('form_transmission')}</Label>
-                     <Select value={car.specifications.transmission} onValueChange={(value) => handleSpecSelectChange('transmission', value as Car['specifications']['transmission'])}>
+                     <Select value={car.specifications?.transmission ?? 'Automatic'} onValueChange={(value) => handleSpecSelectChange('transmission', value)}>
                            <SelectTrigger><SelectValue /></SelectTrigger>
                            <SelectContent>
                                 <SelectItem value="Automatic">Automatic</SelectItem>
@@ -257,11 +276,11 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
                  </div>
                  <div className="space-y-2">
                     <Label htmlFor="mileage">{t('form_mileage')}</Label>
-                    <Input id="mileage" name="mileage" value={car.specifications.mileage} onChange={handleSpecChange} required />
+                    <Input id="mileage" name="mileage" value={car.specifications?.mileage ?? ''} onChange={handleSpecChange} required />
                  </div>
                  <div className="space-y-2">
                     <Label htmlFor="fuelType">{t('form_fuel_type')}</Label>
-                     <Select value={car.specifications.fuelType} onValueChange={(value) => handleSpecSelectChange('fuelType', value as Car['specifications']['fuelType'])}>
+                     <Select value={car.specifications?.fuelType ?? 'Petrol'} onValueChange={(value) => handleSpecSelectChange('fuelType', value)}>
                            <SelectTrigger><SelectValue /></SelectTrigger>
                            <SelectContent>
                                 <SelectItem value="Petrol">Petrol</SelectItem>
@@ -273,7 +292,7 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
                  </div>
                  <div className="space-y-2">
                     <Label htmlFor="bodyType">{t('form_body_type')}</Label>
-                     <Select value={car.specifications.bodyType} onValueChange={(value) => handleSpecSelectChange('bodyType', value as Car['specifications']['bodyType'])}>
+                     <Select value={car.specifications?.bodyType ?? 'Sedan'} onValueChange={(value) => handleSpecSelectChange('bodyType', value)}>
                            <SelectTrigger><SelectValue /></SelectTrigger>
                            <SelectContent>
                                 <SelectItem value="Sedan">Sedan</SelectItem>
@@ -300,7 +319,7 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
                     <p className="text-sm">For now, please add images via URL below.</p>
                 </div>
 
-                {car.images.map((url, index) => (
+                {(car.images && Array.isArray(car.images) ? car.images : ['']).map((url, index) => (
                     <div key={index} className="flex items-center gap-2">
                         <Input
                             type="text"
@@ -309,16 +328,16 @@ export const ListCarPage: React.FC<ListCarPageProps> = ({ carToEdit, onSubmit, s
                             onChange={(e) => handleImageUrlChange(index, e.target.value)}
                             required
                         />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeImageUrl(index)} disabled={car.images.length <= 1}>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeImageUrl(index)} disabled={(car.images && Array.isArray(car.images) ? car.images : ['']).length <= 1}>
                             <TrashIcon className="h-4 w-4" />
                         </Button>
                     </div>
                 ))}
-                {car.images.length < 10 && (
+                {(car.images && Array.isArray(car.images) ? car.images : ['']).length < 10 && (
                     <Button type="button" variant="secondary" outline onClick={addImageUrl}>{t('form_add_image')}</Button>
                 )}
                 {/* TODO: Migrate to next/Image with remotePatterns for Supabase CDN and external URLs */}
-                {car.images?.[0] && (
+                {car.images && Array.isArray(car.images) && car.images[0] && (
                     <img
                         src={car.images[0]}
                         alt="Main image preview"

@@ -169,6 +169,8 @@ export const translations: Record<Language, Translations> = {
     'empty_saved_searches_desc': 'Save a search to get notified about new listings that match your criteria.',
     'no_featured_cars_title': 'No Featured Cars Yet',
     'no_featured_cars_message': 'Check back soon for amazing vehicles from verified sellers across Korea and Africa!',
+    'error_loading_cars': 'Error Loading Cars',
+    'error_try_again': 'Unable to load cars. Please try again later.',
   },
   ko: {
     'logo': 'SK 오토스피어',
@@ -333,6 +335,8 @@ export const translations: Record<Language, Translations> = {
     'empty_saved_searches_desc': '검색을 저장하여 기준에 맞는 새 리스팅에 대한 알림을 받으세요.',
     'no_featured_cars_title': '아직 추천 자동차가 없습니다',
     'no_featured_cars_message': '한국과 아프리카 전역의 인증된 판매자로부터 멋진 차량을 곧 만나보세요!',
+    'error_loading_cars': '자동차 로딩 오류',
+    'error_try_again': '자동차를 로드할 수 없습니다. 나중에 다시 시도해주세요.',
   },
   fr: {
     'logo': 'SK AutoSphere',
@@ -497,6 +501,8 @@ export const translations: Record<Language, Translations> = {
     'empty_saved_searches_desc': 'Enregistrez une recherche pour être averti des nouvelles annonces correspondant à vos critères.',
     'no_featured_cars_title': 'Pas encore de voitures en vedette',
     'no_featured_cars_message': 'Revenez bientôt pour découvrir d\'incroyables véhicules de vendeurs vérifiés en Corée et en Afrique !',
+    'error_loading_cars': 'Erreur de chargement des voitures',
+    'error_try_again': 'Impossible de charger les voitures. Veuillez réessayer plus tard.',
   },
   sw: {
     'logo': 'SK AutoSphere',
@@ -661,5 +667,7 @@ export const translations: Record<Language, Translations> = {
     'empty_saved_searches_desc': 'Hifadhi utafutaji ili kupata arifa kuhusu orodha mpya zinazolingana na vigezo vyako.',
     'no_featured_cars_title': 'Bado Hakuna Magari Maarufu',
     'no_featured_cars_message': 'Rudi hivi karibuni kwa magari ya ajabu kutoka kwa wauzaji waliothbitishwa katika Korea na Afrika!',
+    'error_loading_cars': 'Hitilafu ya Kupakia Magari',
+    'error_try_again': 'Haiwezi kupakia magari. Tafadhali jaribu tena baadaye.',
   },
 };

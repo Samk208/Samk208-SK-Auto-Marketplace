@@ -77,6 +77,7 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
   const { t, language, setLanguage } = useTranslation();
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -114,6 +115,11 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
     { code: 'fr', name: 'Français' },
     { code: 'sw', name: 'Kiswahili' },
   ];
+
+  // Fix hydration error: only render theme toggle on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -180,9 +186,14 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onSignUp, user, onLogou
             )}
           </div>
           
-          <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-accent">
-            {theme === 'light' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
-          </button>
+          {/* Theme toggle - only render on client to avoid hydration errors */}
+          {mounted ? (
+            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-accent" aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}>
+              {theme === 'light' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
+            </button>
+          ) : (
+            <div className="p-2 w-9 h-9" />
+          )}
 
           {user ? (
             <>

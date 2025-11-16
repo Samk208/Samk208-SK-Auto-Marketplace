@@ -1,31 +1,32 @@
+import { Database } from './database.types';
 
-export interface Car {
-  id: string;
-  make: string;
-  model: string;
-  year: number;
-  price: number;
-  currency: string;
-  location: {
+// Database types
+export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type CarRow = Database['public']['Tables']['cars']['Row'];
+
+// Extended Car interface with computed properties and joined data
+export interface Car extends Omit<CarRow, 'specifications'> {
+  // Database fields are inherited from CarRow
+  // Override specifications with typed version
+  specifications?: {
+    engine?: string;
+    mileage?: number | string; // Can be number (km) or string with units ("11.7 km/L", "475 km range")
+    mileage_km?: number;
+    transmission?: 'Automatic' | 'Manual' | string;
+    fuelType?: 'Petrol' | 'Diesel' | 'Electric' | 'Hybrid' | string;
+    fuel_type?: string;
+    bodyType?: 'Sedan' | 'SUV' | 'Truck' | 'Hatchback' | 'Coupe' | string;
+    body_type?: string;
+    color?: string;
+    [key: string]: any; // Allow additional JSONB fields
+  };
+  // Computed/joined fields
+  location?: {
     city: string;
     country: string;
   };
-  images: string[];
-  specifications: {
-    engine: string;
-    mileage: string;
-    transmission: 'Automatic' | 'Manual';
-    fuelType: 'Petrol' | 'Diesel' | 'Electric' | 'Hybrid';
-    bodyType: 'Sedan' | 'SUV' | 'Truck' | 'Hatchback' | 'Coupe';
-  } | any; // allow JSONB from DB during migration
-  description: string;
-  status: 'Active' | 'Sold' | 'Pending' | 'available' | 'sold' | 'pending';
-  dealer_id: string;
-  // Optional fields mirrored from Supabase schema to aid migration
-  specifications_raw?: any;
-  location_city?: string;
-  location_country?: string;
-  created_at?: string;
+  seller?: Profile; // Joined dealer profile
+  dealer?: Profile; // Alias for seller
 }
 
 export interface User {

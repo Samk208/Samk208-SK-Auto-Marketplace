@@ -32,7 +32,7 @@ const useSelectContext = () => {
 const Select: React.FC<{ children: React.ReactNode; value: string; onValueChange: (value: string) => void; }> = ({ children, value, onValueChange }) => {
   const [open, setOpen] = useState(false);
   const [displayValue, setDisplayValue] = useState<React.ReactNode>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,11 +52,15 @@ const Select: React.FC<{ children: React.ReactNode; value: string; onValueChange
   );
 };
 
-const SelectTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(({ children, className, ...props }, ref) => {
+const SelectTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(({ children, className, ...props }, _ref) => {
     const { open, setOpen, triggerRef, displayValue } = useSelectContext();
     return (
         <button
-            ref={triggerRef}
+            ref={(node) => {
+              if (node) {
+                (triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+              }
+            }}
             onClick={() => setOpen(!open)}
             className={`flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
             {...props}

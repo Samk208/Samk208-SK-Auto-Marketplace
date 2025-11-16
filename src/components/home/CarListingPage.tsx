@@ -55,10 +55,10 @@ export const CarListingPage: React.FC<CarListingPageProps> = ({ cars, sellers, o
   }, [initialSearchTerm]);
 
   const locations = useMemo(
-    () => ['all', ...Array.from(new Set(items.map(car => `${car.location.city}, ${car.location.country}`)))],
+    () => ['all', ...Array.from(new Set(items.map(car => `${car.location?.city ?? 'Unknown'}, ${car.location?.country ?? 'Unknown'}`)))],
     [items]
   );
-  
+
   const mapDbCar = (c: any): Car => ({
     id: c.id,
     make: c.make,
@@ -70,9 +70,20 @@ export const CarListingPage: React.FC<CarListingPageProps> = ({ cars, sellers, o
     images: Array.isArray(c.images) ? c.images : [],
     specifications: c.specifications || {},
     description: c.description || '',
+    description_en: c.description_en || null,
+    description_fr: c.description_fr || null,
+    description_sw: c.description_sw || null,
+    location_country: c.location_country,
+    location_city: c.location_city,
     status: c.status,
+    featured: c.featured || false,
     dealer_id: c.dealer_id,
+    view_count: c.view_count || 0,
+    inquiry_count: c.inquiry_count || 0,
+    ai_generated: c.ai_generated || false,
+    shipping_available: c.shipping_available || false,
     created_at: c.created_at,
+    updated_at: c.updated_at || c.created_at,
   });
 
   const buildQuery = useCallback(() => {

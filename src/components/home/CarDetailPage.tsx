@@ -43,7 +43,8 @@ const PLACEHOLDER_CAR_IMAGE = 'https://placehold.co/600x400/e2e8f0/64748b?text=N
 
 export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, otherListings, sellers, onNavigate, showToast, onOpenContact, currentUser }) => {
     const { t } = useTranslation();
-    const [mainImage, setMainImage] = useState(car.images?.[0] || PLACEHOLDER_CAR_IMAGE);
+    const safeImages = car.images && Array.isArray(car.images) ? car.images : [];
+    const [mainImage, setMainImage] = useState(safeImages[0] || PLACEHOLDER_CAR_IMAGE);
     const [destinationPort, setDestinationPort] = useState('');
     const [shippingEstimate, setShippingEstimate] = useState<{ shipping: number; duties: number; total: number } | null>(null);
     
@@ -79,9 +80,9 @@ export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, other
                             onError={(e) => { e.currentTarget.src = PLACEHOLDER_CAR_IMAGE; }}
                         />
                     </div>
-                    {(car.images?.length || 0) > 1 && (
+                    {safeImages.length > 1 && (
                         <div className="flex gap-2">
-                            {car.images.map((url, index) => (
+                            {safeImages.map((url, index) => (
                                 <img
                                     key={index}
                                     src={url || PLACEHOLDER_CAR_IMAGE}
@@ -175,11 +176,11 @@ export const CarDetailPage: React.FC<CarDetailPageProps> = ({ car, seller, other
                             <InfoItem label={t('form_make')} value={car.make} />
                             <InfoItem label={t('form_model')} value={car.model} />
                             <InfoItem label={t('form_year')} value={String(car.year)} />
-                            <InfoItem label={t('form_engine')} value={car.specifications.engine} />
-                            <InfoItem label={t('form_mileage')} value={car.specifications.mileage} />
-                            <InfoItem label={t('form_transmission')} value={car.specifications.transmission} />
-                            <InfoItem label={t('form_fuel_type')} value={car.specifications.fuelType} />
-                            <InfoItem label={t('form_body_type')} value={car.specifications.bodyType} />
+                            <InfoItem label={t('form_engine')} value={car.specifications?.engine ?? 'N/A'} />
+                            <InfoItem label={t('form_mileage')} value={String(car.specifications?.mileage ?? 'N/A')} />
+                            <InfoItem label={t('form_transmission')} value={car.specifications?.transmission ?? 'N/A'} />
+                            <InfoItem label={t('form_fuel_type')} value={car.specifications?.fuelType ?? 'N/A'} />
+                            <InfoItem label={t('form_body_type')} value={car.specifications?.bodyType ?? 'N/A'} />
                         </CardContent>
                     </Card>
                 </div>

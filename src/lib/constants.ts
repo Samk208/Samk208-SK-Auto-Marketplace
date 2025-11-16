@@ -1,6 +1,29 @@
 
 import type { Car, User } from '@/types/types';
 
+// Helper to create complete Car objects with all required fields
+const createMockCar = (partial: Partial<Car> & Pick<Car, 'id' | 'make' | 'model' | 'year' | 'price' | 'dealer_id'>): Car => ({
+  description: '',
+  description_en: null,
+  description_fr: null,
+  description_sw: null,
+  location_country: '',
+  location_city: '',
+  location: { city: '', country: '' },
+  images: [],
+  status: 'available',
+  featured: false,
+  specifications: {},
+  view_count: 0,
+  inquiry_count: 0,
+  ai_generated: false,
+  shipping_available: true,
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
+  currency: 'USD',
+  ...partial,
+});
+
 export const MOCK_SELLERS: User[] = [
   {
     id: 'seller-123',
@@ -35,15 +58,19 @@ export const MOCK_SELLERS: User[] = [
 
 
 export const ALL_CARS: Car[] = [
-  {
+  createMockCar({
     id: '1',
     make: 'Hyundai',
     model: 'Grandeur',
     year: 2023,
     price: 45000,
     currency: 'USD',
+    location_country: 'KR',
+    location_city: 'Seoul',
     location: { city: 'Seoul', country: 'KR' },
     images: ['https://picsum.photos/seed/hyundai1/800/600', 'https://picsum.photos/seed/hyundai1-a/800/600'],
+    status: 'available',
+    featured: true,
     specifications: {
       engine: '2.5L GDi',
       mileage: '11.7 km/L',
@@ -52,16 +79,17 @@ export const ALL_CARS: Car[] = [
       bodyType: 'Sedan',
     },
     description: 'A premium sedan offering unparalleled comfort and cutting-edge technology. Perfect for executive travel.',
-    status: 'Active',
     dealer_id: 'seller-123',
-  },
-  {
+  }),
+  createMockCar({
     id: '2',
     make: 'Kia',
     model: 'EV6',
     year: 2024,
     price: 52000,
     currency: 'USD',
+    location_country: 'KE',
+    location_city: 'Nairobi',
     location: { city: 'Nairobi', country: 'KE' },
     images: ['https://picsum.photos/seed/kia1/800/600', 'https://picsum.photos/seed/kia1-a/800/600'],
     specifications: {
@@ -72,16 +100,18 @@ export const ALL_CARS: Car[] = [
       bodyType: 'SUV',
     },
     description: 'Experience the future of driving with the award-winning Kia EV6. Instant acceleration and zero emissions.',
-    status: 'Active',
+    status: 'available',
     dealer_id: 'seller-456',
-  },
-  {
+  }),
+  createMockCar({
     id: '3',
     make: 'Genesis',
     model: 'G80',
     year: 2023,
     price: 68000,
     currency: 'USD',
+    location_country: 'NG',
+    location_city: 'Lagos',
     location: { city: 'Lagos', country: 'NG' },
     images: ['https://picsum.photos/seed/genesis1/800/600', 'https://picsum.photos/seed/genesis1-a/800/600'],
     specifications: {
@@ -92,16 +122,18 @@ export const ALL_CARS: Car[] = [
       bodyType: 'Sedan',
     },
     description: 'The Genesis G80 combines audacious design with advanced technology for a truly luxurious driving experience.',
-    status: 'Active',
+    status: 'available',
     dealer_id: 'seller-456',
-  },
-  {
+  }),
+  createMockCar({
     id: '4',
     make: 'SsangYong',
     model: 'Torres',
     year: 2023,
     price: 38000,
     currency: 'USD',
+    location_country: 'SN',
+    location_city: 'Dakar',
     location: { city: 'Dakar', country: 'SN' },
     images: ['https://picsum.photos/seed/ssangyong1/800/600'],
     specifications: {
@@ -112,16 +144,18 @@ export const ALL_CARS: Car[] = [
       bodyType: 'SUV',
     },
     description: 'Rugged yet refined, the SsangYong Torres is the perfect companion for both city streets and off-road adventures.',
-    status: 'Active',
+    status: 'available',
     dealer_id: 'seller-789',
-  },
-  {
+  }),
+  createMockCar({
     id: '5',
     make: 'Hyundai',
     model: 'Palisade',
     year: 2024,
     price: 55000,
     currency: 'USD',
+    location_country: 'ZA',
+    location_city: 'Johannesburg',
     location: { city: 'Johannesburg', country: 'ZA' },
     images: ['https://picsum.photos/seed/hyundai2/800/600'],
     specifications: {
@@ -132,16 +166,18 @@ export const ALL_CARS: Car[] = [
       bodyType: 'SUV',
     },
     description: 'A spacious and luxurious 3-row SUV for the whole family, packed with safety and convenience features.',
-    status: 'Pending',
+    status: 'available',
     dealer_id: 'seller-123',
-  },
-  {
+  }),
+  createMockCar({
     id: '6',
     make: 'Kia',
     model: 'Seltos',
     year: 2023,
     price: 29000,
     currency: 'USD',
+    location_country: 'GH',
+    location_city: 'Accra',
     location: { city: 'Accra', country: 'GH' },
     images: ['https://picsum.photos/seed/kia2/800/600'],
     specifications: {
@@ -152,16 +188,18 @@ export const ALL_CARS: Car[] = [
       bodyType: 'SUV',
     },
     description: 'A compact SUV that doesn\'t compromise on style or performance. Perfect for urban exploration.',
-    status: 'Active',
+    status: 'available',
     dealer_id: 'seller-456',
-  },
-  {
+  }),
+  createMockCar({
     id: '7',
     make: 'Genesis',
     model: 'GV70',
     year: 2024,
     price: 59000,
     currency: 'USD',
+    location_country: 'EG',
+    location_city: 'Cairo',
     location: { city: 'Cairo', country: 'EG' },
     images: ['https://picsum.photos/seed/genesis2/800/600'],
     specifications: {
@@ -172,16 +210,18 @@ export const ALL_CARS: Car[] = [
       bodyType: 'SUV',
     },
     description: 'Athletic elegance and impressive performance define the Genesis GV70 luxury SUV.',
-    status: 'Active',
+    status: 'available',
     dealer_id: 'seller-123',
-  },
-  {
+  }),
+  createMockCar({
     id: '8',
     make: 'Hyundai',
     model: 'Ioniq 5',
     year: 2023,
     price: 48000,
     currency: 'USD',
+    location_country: 'ZA',
+    location_city: 'Cape Town',
     location: { city: 'Cape Town', country: 'ZA' },
     images: ['https://picsum.photos/seed/hyundai3/800/600'],
     specifications: {
@@ -192,7 +232,7 @@ export const ALL_CARS: Car[] = [
       bodyType: 'Hatchback',
     },
     description: 'Retro design meets futuristic technology in this groundbreaking electric vehicle.',
-    status: 'Sold',
+    status: 'available',
     dealer_id: 'seller-123',
-  },
+  }),
 ];
